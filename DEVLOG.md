@@ -20,6 +20,13 @@ Subject: Mobile Application Development (Flutter)
   - **Placeholder** – reserved spots for categories, products, and add-ons
 - Replaced the default counter test with a home screen test (`flutter test` passes)
 
+**Day 1 polish:**
+- Organized the code into folders: `screens/`, `widgets/`, `theme/`
+- Added a custom dark fantasy theme (dragon red, gold, parchment) in `app_theme.dart`
+- Added a welcome banner with a gradient, a footer, and reusable `SectionTitle` and `ComingSoonBox` widgets
+- Kept the content phone-width (max 600px) so it looks good in Chrome too
+- Changed the Android app label to "Marketing Vikings"
+
 **Problems / what I learned:**
 - _(write yours here)_
 
