@@ -1,73 +1,356 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/cart_controller.dart';
+import '../models/product.dart';
 import '../theme/app_theme.dart';
-import '../widgets/coming_soon_box.dart';
+import '../widgets/animated_tavern_background.dart';
+import '../widgets/app_bar_logo.dart';
+import '../widgets/category_chip_bar.dart';
+import '../widgets/design_addons_placeholder.dart';
+import '../widgets/hero_carousel.dart';
+import '../widgets/product_card.dart';
 import '../widgets/section_title.dart';
+import 'cart_screen.dart';
+import 'checkout_screen.dart';
+import 'product_detail_screen.dart';
 
-/// The main shop screen.
-/// Day 1: layout skeleton – real features replace the placeholders later.
-class HomeScreen extends StatelessWidget {
+/// Marketing Vikings: Tabletop RPG Miniatures & Dice Swap
+/// Main Shop Screen featuring:
+/// - AppBar with optimized SVG logo & cart badge
+/// - Dynamic animated tavern background
+/// - Featured Hero Carousel
+/// - Horizontal Category Chips (Minis, Dice, Digital Maps)
+/// - Responsive GridView of authentic non-AI product items (min £100)
+/// - Placeholders for upcoming design add-ons (AR placer, dice roller)
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  ProductCategory _selectedCategory = ProductCategory.all;
+
+  List<Product> get _filteredProducts {
+    if (_selectedCategory == ProductCategory.all) {
+      return Product.catalog;
+    }
+    return Product.catalog
+        .where((p) => p.category == _selectedCategory)
+        .toList();
+  }
+
+  void _navigateToDetail(Product product) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+    );
+  }
+
+  void _quickBuy(Product product) {
+    CartController.instance.addItem(
+      product: product,
+      color: product.colors.first,
+      size: product.sizes.first,
+      quantity: 1,
+    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const CheckoutScreen()));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // SCAFFOLD: the basic page layout (app bar + body).
+    final filtered = _filteredProducts;
+
+    // Scaffold with dynamic animated background
     return Scaffold(
-      // APPBAR: top bar with a temporary logo icon.
-      // Day 2 → replace the icon with our SVG logo + navigation menu.
       appBar: AppBar(
-        leading: const Icon(Icons.shield_outlined, color: AppColors.gold),
-        title: const Text(
-          'Marketing Vikings',
-          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5),
+        // Optimized SVG Logo in AppBar
+        leadingWidth: 180,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: AppBarLogo(
+              onTap: () {
+                setState(() => _selectedCategory = ProductCategory.all);
+              },
+            ),
+          ),
+        ),
+        title: const SizedBox.shrink(),
+        actions: [
+          // Cart Action with Live Badge (Icon: 🛒)
+          AnimatedBuilder(
+            animation: CartController.instance,
+            builder: (context, _) {
+              final count = CartController.instance.totalItemCount;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.shopping_cart_outlined,
+                        color: AppColors.gold,
+                      ),
+                      tooltip: 'View Cart 🛒',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CartScreen()),
+                        );
+                      },
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.dragonRed,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            '$count',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+
+      // Navigation Drawer with realm shortcuts and information
+      drawer: Drawer(
+        backgroundColor: AppColors.stone,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.dragonRed, AppColors.stone],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AppBarLogo(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      setState(() => _selectedCategory = ProductCategory.all);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Tabletop RPG Miniatures & Dice Swap',
+                    style: TextStyle(
+                      color: AppColors.parchment,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.auto_awesome, color: AppColors.gold),
+              title: const Text(
+                'All Items',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              onTap: () {
+                setState(() => _selectedCategory = ProductCategory.all);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shield, color: AppColors.gold),
+              title: const Text(
+                'Painted Miniatures',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'With 360° inspection scrubber',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() => _selectedCategory = ProductCategory.minis);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.casino, color: AppColors.gold),
+              title: const Text(
+                'Custom Dice Sets',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Artisan resin & metal polyhedrals',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() => _selectedCategory = ProductCategory.dice);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.map, color: AppColors.gold),
+              title: const Text(
+                'Digital Maps & One-Shots',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Instant download delivery',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() => _selectedCategory = ProductCategory.digitalMaps);
+                Navigator.of(context).pop();
+              },
+            ),
+            const Divider(color: Colors.white12),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart, color: AppColors.gold),
+              title: const Text(
+                'Inventory Cache / Cart 🛒',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const CartScreen()));
+              },
+            ),
+            const Divider(color: Colors.white12),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Mobile Application Development\nMarketing Vikings • Days 1-5 Milestone',
+                style: TextStyle(color: AppColors.mutedText, fontSize: 11),
+              ),
+            ),
+          ],
         ),
       ),
 
-      // BODY: scrollable so nothing overflows on small phones.
-      body: SingleChildScrollView(
-        child: Center(
-          // Keeps the content phone-width even on a big browser window.
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: const Padding(
-              padding: EdgeInsets.all(16),
-              // COLUMN: stacks every section from top to bottom.
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _WelcomeBanner(),
-                  SizedBox(height: 28),
+      // Dynamic animated tavern background containing scrollable shop
+      body: AnimatedTavernBackground(
+        child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Welcome Banner
+                    const _WelcomeBanner(),
+                    const SizedBox(height: 20),
 
-                  SectionTitle(
-                    'Categories',
-                    subtitle: 'Minis • Dice • Digital Maps',
-                  ),
-                  ComingSoonBox(day: 3, label: 'Category buttons', height: 90),
-                  SizedBox(height: 28),
+                    // Featured Spotlight Carousel (CarouselView / PageView)
+                    const SectionTitle(
+                      'Guild Spotlight & 360° Previews',
+                      subtitle:
+                          'Swipe horizontally to inspect featured treasures',
+                    ),
+                    HeroCarousel(onProductTap: _navigateToDetail),
+                    const SizedBox(height: 24),
 
-                  SectionTitle(
-                    'Featured Items',
-                    subtitle: 'Hand-painted & hand-picked',
-                  ),
-                  ComingSoonBox(
-                    day: 4,
-                    label: 'Product cards with real photos',
-                    height: 220,
-                  ),
-                  SizedBox(height: 28),
+                    // Category Filter Chips (ListView horizontal)
+                    const SectionTitle(
+                      'Categories',
+                      subtitle:
+                          'Filter miniatures, custom dice, or digital maps',
+                    ),
+                    CategoryChipBar(
+                      selectedCategory: _selectedCategory,
+                      onSelect: (cat) =>
+                          setState(() => _selectedCategory = cat),
+                    ),
+                    const SizedBox(height: 22),
 
-                  // PLACEHOLDER: potential design add-ons.
-                  SectionTitle(
-                    'Coming Soon',
-                    subtitle: 'Features in development',
-                  ),
-                  ComingSoonBox(day: 5, label: '360° miniature viewer'),
-                  SizedBox(height: 12),
-                  ComingSoonBox(day: 6, label: 'Cart & checkout'),
-                  SizedBox(height: 36),
+                    // Product Catalog Section with Count
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SectionTitle(
+                          _selectedCategory.label,
+                          subtitle:
+                              '${filtered.length} Authentic Items • Minimum £100',
+                        ),
+                        if (_selectedCategory != ProductCategory.all)
+                          TextButton(
+                            onPressed: () => setState(
+                              () => _selectedCategory = ProductCategory.all,
+                            ),
+                            child: const Text(
+                              'View All',
+                              style: TextStyle(color: AppColors.gold),
+                            ),
+                          ),
+                      ],
+                    ),
 
-                  _Footer(),
-                ],
+                    // Scroll widget: Responsive GridView of Product Cards
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: 0.58,
+                          ),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final product = filtered[index];
+                        return ProductCard(
+                          product: product,
+                          onTap: () => _navigateToDetail(product),
+                          onQuickBuy: () => _quickBuy(product),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 36),
+
+                    // Potential Design Add-ons (Placeholder widget)
+                    const SectionTitle(
+                      'Future Design Add-ons',
+                      subtitle: 'Roadmap features using Placeholder widgets',
+                    ),
+                    const DesignAddonsPlaceholder(),
+                    const SizedBox(height: 36),
+
+                    // Footer
+                    const _Footer(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -77,7 +360,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Top banner: tells the user what the shop is and what it sells.
+/// Top banner introducing the marketplace and D&D community focus
 class _WelcomeBanner extends StatelessWidget {
   const _WelcomeBanner();
 
@@ -85,7 +368,7 @@ class _WelcomeBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.dragonRed, AppColors.stone],
@@ -93,37 +376,61 @@ class _WelcomeBanner extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.goldFaded),
+        border: Border.all(color: AppColors.goldFaded, width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      // TEXT: shop name, tagline and description.
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'WELCOME, ADVENTURER',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-              color: AppColors.gold,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'AUTHENTIC TABLETOP MARKET',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.4,
+                    color: AppColors.dungeon,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.verified, color: Colors.greenAccent, size: 16),
+              const SizedBox(width: 4),
+              const Text(
+                'Non-AI Certified',
+                style: TextStyle(color: Colors.greenAccent, fontSize: 11),
+              ),
+            ],
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             'Tabletop RPG Miniatures & Dice Swap',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
               color: AppColors.parchment,
             ),
           ),
-          SizedBox(height: 8),
-          Text(
-            'A marketplace for D&D and board game players. Buy and sell '
-            'painted 3D-printed miniatures, custom dice sets, and digital '
-            'maps & one-shot campaign PDFs.',
+          const SizedBox(height: 6),
+          const Text(
+            'A niche community exchange for D&D and board game adventurers. '
+            'Buy and trade hand-painted 3D-printed miniatures with 360° inspection, '
+            'custom polyhedral dice sets, and digital campaign map PDFs with instant unlock.',
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 13,
               height: 1.4,
               color: AppColors.parchmentFaded,
             ),
@@ -134,16 +441,41 @@ class _WelcomeBanner extends StatelessWidget {
   }
 }
 
-/// Small footer at the bottom of the page.
+/// Footer with copyright and student attribution
 class _Footer extends StatelessWidget {
   const _Footer();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        '© 2026 Marketing Vikings • Made with Flutter',
-        style: TextStyle(fontSize: 12, color: AppColors.mutedText),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.white12)),
+      ),
+      child: const Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shield_moon, color: AppColors.gold, size: 16),
+              SizedBox(width: 6),
+              Text(
+                'Marketing Vikings • Mobile Application Development',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.parchment,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 4),
+          Text(
+            'All product photos are authentic physical miniatures and historic cartography from Wikimedia Commons.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+          ),
+        ],
       ),
     );
   }

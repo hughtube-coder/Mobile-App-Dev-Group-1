@@ -1,7 +1,7 @@
 {
-  // Tells the VS Code Flutter extension where Flutter is installed.
+  
   "dart.flutterSdkPath": "C:\\src\\flutter",
-  // This is a Flutter project, so don't ask about CMake files.
+
   "cmake.ignoreCMakeListsMissing": true,
   "cmake.configureOnOpen": false
 }
