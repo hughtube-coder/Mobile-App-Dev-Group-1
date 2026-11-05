@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 /// Checkout screen demonstrating Form, FormField, TextFormField, and `GlobalKey<FormState>`.
 /// Enforces comprehensive validation and simulates digital file delivery unlock upon purchase.
@@ -110,7 +111,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Your pledge of £${totalAmount.toStringAsFixed(0)} has been recorded in the Guild Ledger. Confirmation dispatched to ${_emailController.text.trim()}.',
+              'Your pledge of ${CurrencyFormatter.format(totalAmount)} has been recorded in the Guild Ledger. Confirmation dispatched to ${_emailController.text.trim()}.',
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.parchmentFaded,
@@ -255,7 +256,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ],
                     ),
                     Text(
-                      '£${cart.grandTotal.toStringAsFixed(0)}',
+                      CurrencyFormatter.format(cart.grandTotal),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -420,7 +421,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         const SizedBox(height: 8),
                         _buildCourierOption(
-                          title: 'Wyvern Express (+£10 tracked)',
+                          title: 'Wyvern Express (+₱100 tracked)',
                           value: 'express',
                           selected: _courierSpeed == 'express',
                           onTap: () {
@@ -510,7 +511,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   label: Text(
                     _isProcessing
                         ? 'Sealing Pact...'
-                        : 'Confirm & Pay £${cart.grandTotal.toStringAsFixed(0)} 💰',
+                        : 'Confirm & Pay ${CurrencyFormatter.format(cart.grandTotal)} 💰',
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,

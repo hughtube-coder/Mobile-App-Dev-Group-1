@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/cart_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 /// Reusable product card displayed inside GridView and ListView listings.
 class ProductCard extends StatelessWidget {
@@ -85,7 +86,7 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Top Left: 360° / Category Badge using Transform & Align
+                  // Top Left: 360° / LUT Badge using Transform & Align
                   if (product.has360View)
                     Align(
                       alignment: Alignment.topLeft,
@@ -117,6 +118,49 @@ class ProductCard extends StatelessWidget {
                                 SizedBox(width: 3),
                                 Text(
                                   '360°',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.parchment,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (product.hasLutPreview)
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Transform.rotate(
+                          angle: -0.06,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00695C),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.gold,
+                                width: 1,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.tune,
+                                  size: 12,
+                                  color: AppColors.gold,
+                                ),
+                                SizedBox(width: 3),
+                                Text(
+                                  'LUT SLIDER',
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
@@ -207,12 +251,12 @@ class ProductCard extends StatelessWidget {
                       ],
                     ),
 
-                    // Price & Actions Row
+                    // Price & Actions Row (Philippine Pesos ₱)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '£${product.price.toStringAsFixed(0)}',
+                          CurrencyFormatter.format(product.price),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,

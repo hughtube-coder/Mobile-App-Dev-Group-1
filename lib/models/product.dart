@@ -4,7 +4,8 @@ enum ProductCategory {
   all('All Items', Icons.auto_awesome),
   minis('Painted Minis', Icons.shield),
   dice('Custom Dice', Icons.casino),
-  digitalMaps('Digital Maps', Icons.map);
+  digitalMaps('Digital Maps', Icons.map),
+  presets('LUTs & Presets', Icons.tune);
 
   const ProductCategory(this.label, this.icon);
   final String label;
@@ -22,7 +23,7 @@ class Product {
   final String id;
   final String name;
   final ProductCategory category;
-  final double price; // Minimum £100 per requirements
+  final double price; // Minimum ₱100 per requirements
   final double rating;
   final int reviewCount;
   final String shortDescription;
@@ -30,6 +31,7 @@ class Product {
   final String primaryImage;
   final List<String> galleryImages; // 8 angles for 360° scrubber or gallery
   final bool has360View;
+  final bool hasLutPreview; // Supports ColorFiltered split-screen preview!
   final List<ProductColorOption> colors;
   final List<String> sizes;
   final bool isDigital;
@@ -48,6 +50,7 @@ class Product {
     required this.primaryImage,
     required this.galleryImages,
     this.has360View = false,
+    this.hasLutPreview = false,
     required this.colors,
     required this.sizes,
     this.isDigital = false,
@@ -55,21 +58,21 @@ class Product {
     required this.license,
   });
 
-  /// Authentic catalog of tabletop RPG miniatures, dice, and digital maps.
-  /// All photos are authentic, non-AI photographs curated from Wikimedia Commons with complete attribution.
+  /// Authentic catalog of tabletop RPG miniatures, custom dice, digital maps, and digital LUT presets.
+  /// All photos are authentic, non-AI photographs from Wikimedia Commons with complete attribution.
+  /// Prices are denominated in Philippine Pesos (₱) with a strict minimum of ₱100.
   static const List<Product> catalog = [
     Product(
       id: 'mini-01',
       name: 'Sun-Priest Feathered Headdress Hero',
       category: ProductCategory.minis,
-      price: 245.0, // £245 (minimum £100+)
+      price: 2450.0, // ₱2,450 (strictly >= ₱100 minimum)
       rating: 4.95,
       reviewCount: 38,
       shortDescription: 'Expertly hand-painted 28mm miniature with multi-layer acrylic shading and gold leaf trim.',
       fullDescription: 'A museum-grade tabletop miniature depicting a Sun-Priest champion adorned with ceremonial feathered headdress and ancestral relic blade. Painted with 14 micro-glazes, non-metallic metal (NMM) techniques, and sealed with ultra-matte protective varnish. Comes mounted on a sculpted scenic dungeon base.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Standing_Figure_with_Feathered_Headdress_MET_DP239898.jpg/640px-Standing_Figure_with_Feathered_Headdress_MET_DP239898.jpg',
       has360View: true,
-      // 8 distinct angles photographed around the figure for 360° inspection!
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Standing_Figure_with_Feathered_Headdress_MET_DP239898.jpg/640px-Standing_Figure_with_Feathered_Headdress_MET_DP239898.jpg',
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Standing_Figure_with_Feathered_Headdress_MET_DP239899.jpg/640px-Standing_Figure_with_Feathered_Headdress_MET_DP239899.jpg',
@@ -96,7 +99,7 @@ class Product {
       id: 'mini-02',
       name: 'Yuan-Ti Serpentine Abomination',
       category: ProductCategory.minis,
-      price: 165.0, // £165
+      price: 1650.0, // ₱1,650
       rating: 4.88,
       reviewCount: 24,
       shortDescription: 'Custom 3D-printed resin snake-folk warlord painted with reptilian scales and poison wash.',
@@ -120,11 +123,11 @@ class Product {
       id: 'mini-03',
       name: 'Vanguard Chaos Knight & Steed',
       category: ProductCategory.minis,
-      price: 290.0, // £290
+      price: 2900.0, // ₱2,900
       rating: 4.98,
       reviewCount: 42,
       shortDescription: 'Competition-tier heavy armored dread knight on dynamic volcanic scenic terrain.',
-      fullDescription: 'Showcase centerpiece miniature featured in local regional painting competitions. Weathered rust pitting on spiked battle plate, molten lava osl (object source lighting) on the base, and parchment scrolls with microscopic hand-inked runes.',
+      fullDescription: 'Showcase centerpiece miniature featured in local regional painting competitions. Weathered rust pitting on spiked battle plate, molten lava osl on the base, and parchment scrolls with microscopic hand-inked runes.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Warhammer_AoS_Lind.jpg/640px-Warhammer_AoS_Lind.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Warhammer_AoS_Lind.jpg/640px-Warhammer_AoS_Lind.jpg',
@@ -144,11 +147,11 @@ class Product {
       id: 'dice-01',
       name: 'Lilac Amethyst Resin 7-Piece Dice Set',
       category: ProductCategory.dice,
-      price: 120.0, // £120
+      price: 1200.0, // ₱1,200
       rating: 4.92,
       reviewCount: 51,
       shortDescription: 'Sharp-edged translucent resin polyhedral dice with lilac shimmer inclusions and crisp gold numbering.',
-      fullDescription: 'Balanced handmade resin dice set including d4, d6, d8, d10, d%, d12, and high-impact d20. Poured in pressurized chambers to eliminate micro-bubbles. Balanced centre-of-gravity tested for fair, honest rolls during intense campaign climaxes.',
+      fullDescription: 'Balanced handmade resin dice set including d4, d6, d8, d10, d%, d12, and high-impact d20. Poured in pressurized chambers to eliminate micro-bubbles. Balanced centre-of-gravity tested for fair rolls.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Dice_Lilac_Set.jpg/640px-Dice_Lilac_Set.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Dice_Lilac_Set.jpg/640px-Dice_Lilac_Set.jpg',
@@ -168,11 +171,11 @@ class Product {
       id: 'dice-02',
       name: 'Astral Cobalt & Gold Font Polyhedrals',
       category: ProductCategory.dice,
-      price: 135.0, // £135
+      price: 1350.0, // ₱1,350
       rating: 4.90,
       reviewCount: 33,
       shortDescription: 'Deep midnight blue dice with pearlescent swirls reminiscent of deep cosmos and arcane rifts.',
-      fullDescription: 'Crafted from heavy jewel-grade resin with deep pigment dispersion. High-contrast golden numerals ensure instant legibility across dimly-lit gaming tables. Includes velvet dice vault pouch with embroidered Viking knotwork.',
+      fullDescription: 'Crafted from heavy jewel-grade resin with deep pigment dispersion. High-contrast golden numerals ensure instant legibility across dimly-lit gaming tables. Includes velvet dice vault pouch.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Gaming_dice_multisided_blue.jpg/640px-Gaming_dice_multisided_blue.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Gaming_dice_multisided_blue.jpg/640px-Gaming_dice_multisided_blue.jpg',
@@ -192,11 +195,11 @@ class Product {
       id: 'dice-03',
       name: 'The One Ring Artisan Dwarven Dice Vault',
       category: ProductCategory.dice,
-      price: 195.0, // £195
+      price: 1950.0, // ₱1,950
       rating: 4.97,
       reviewCount: 67,
       shortDescription: 'Heavyweight semi-precious stone & metallic alloy dice with runic tengwar border accents.',
-      fullDescription: 'Forged for high-stakes journeys into the Shadow. Distinct weight in hand creates satisfying tactile thuds on leather dice trays. Includes two matched sets (d6 & d12 specialized campaign dice) in carved walnut display case.',
+      fullDescription: 'Forged for high-stakes journeys into the Shadow. Distinct weight in hand creates satisfying tactile thuds on leather dice trays. Includes two matched sets in carved walnut display case.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/The_One_Ring_Roleplaying_Game_-_Two_dice_sets.jpg/640px-The_One_Ring_Roleplaying_Game_-_Two_dice_sets.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/The_One_Ring_Roleplaying_Game_-_Two_dice_sets.jpg/640px-The_One_Ring_Roleplaying_Game_-_Two_dice_sets.jpg',
@@ -216,11 +219,11 @@ class Product {
       id: 'map-01',
       name: 'Carta Marina Kraken & Leviathan Sea Battle Map',
       category: ProductCategory.digitalMaps,
-      price: 110.0, // £110
+      price: 1100.0, // ₱1,100
       rating: 4.96,
       reviewCount: 89,
       shortDescription: 'Instant 8K Ultra-HD Digital Campaign Map with grid and gridless VTT exports + printable PDF.',
-      fullDescription: 'A historic Nordic cartographic masterpiece adapted for VTT (Roll20, Foundry, Fantasy Grounds) and in-person tabletop sessions. Features treacherous sea monsters, whirlpool hazard zones, coastal fortress layouts, and a printable 300 DPI 36x24 inch battle grid.',
+      fullDescription: 'A historic Nordic cartographic masterpiece adapted for VTT (Roll20, Foundry, Fantasy Grounds) and in-person tabletop sessions. Features treacherous sea monsters, whirlpool hazard zones, and high-res battle grid.',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Carta_Marina_1539_with_sea_serpent.jpg/640px-Carta_Marina_1539_with_sea_serpent.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Carta_Marina_1539_with_sea_serpent.jpg/640px-Carta_Marina_1539_with_sea_serpent.jpg',
@@ -241,11 +244,11 @@ class Product {
       id: 'map-02',
       name: 'Islandia Eldritch Glacier & Volcano Battle Map Pack',
       category: ProductCategory.digitalMaps,
-      price: 140.0, // £140
+      price: 1400.0, // ₱1,400
       rating: 4.89,
       reviewCount: 46,
       shortDescription: 'Epic glacial chasm, steaming caldera, and frost-giant realm digital battle map bundle with one-shot PDF adventure.',
-      fullDescription: 'Complete arctic wilderness module including 5 interconnected high-resolution battle maps, dynamic lighting walls for Foundry VTT, weather overlay assets, and a 24-page PDF one-shot adventure: "The Frost Serpent of Mount Hekla". Instant digital delivery upon checkout.',
+      fullDescription: 'Complete arctic wilderness module including 5 interconnected high-resolution battle maps, dynamic lighting walls for Foundry VTT, weather overlay assets, and a 24-page PDF one-shot adventure: "The Frost Serpent of Mount Hekla".',
       primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Abraham_Ortelius-Islandia-ca_1590.jpg/640px-Abraham_Ortelius-Islandia-ca_1590.jpg',
       galleryImages: [
         'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Abraham_Ortelius-Islandia-ca_1590.jpg/640px-Abraham_Ortelius-Islandia-ca_1590.jpg',
@@ -263,6 +266,39 @@ class Product {
       isDigital: true,
       photoCredit: 'Abraham Ortelius (ca 1590) / Wikimedia Commons',
       license: 'Public Domain',
+    ),
+    // Dual e-commerce feature: Digital Pattern & LUT Tester Market
+    Product(
+      id: 'lut-01',
+      name: 'Nordic Tavern Hearth & Frost 3D LUT Cinematic Pack',
+      category: ProductCategory.presets,
+      price: 850.0, // ₱850 (strictly >= ₱100 minimum)
+      rating: 4.96,
+      reviewCount: 78,
+      shortDescription: 'Professional color grading LUT presets (.cube & mobile DNG) calibrated for miniature photography and fantasy film creators.',
+      fullDescription: 'Specially crafted digital lookup tables (LUTs) designed to enhance warm acrylic mini glazes, deep shadows, and luminous magical weapon effects. Interactive split-screen test slider available right in the app before you purchase!',
+      primaryImage: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Warhammer_game.jpg/640px-Warhammer_game.jpg',
+      hasLutPreview: true,
+      galleryImages: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Warhammer_game.jpg/640px-Warhammer_game.jpg',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/D%26D_Game_1.jpg/640px-D%26D_Game_1.jpg',
+      ],
+      colors: [
+        ProductColorOption(name: 'Warm Hearth Amber', color: Color(0xFFFFB300)),
+        ProductColorOption(name: 'Nordic Frost Cyan', color: Color(0xFF26C6DA)),
+        ProductColorOption(
+          name: 'Grimdark Monochrome',
+          color: Color(0xFF78909C),
+        ),
+        ProductColorOption(name: 'Dragon Fire Ruby', color: Color(0xFFE53935)),
+      ],
+      sizes: [
+        'All-in-One (.CUBE, .XMP, Mobile DNG)',
+        'Creator Studio Commercial License',
+      ],
+      isDigital: true,
+      photoCredit: 'Warhammer gaming archive / Wikimedia Commons',
+      license: 'CC BY-SA 4.0',
     ),
   ];
 }

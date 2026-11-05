@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import '../controllers/cart_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
+import '../widgets/lut_split_preview.dart';
 import '../widgets/quantity_stepper.dart';
 import '../widgets/three_sixty_viewer.dart';
 import 'cart_screen.dart';
 import 'checkout_screen.dart';
 
 /// Comprehensive product detail screen featuring 360° image scrubber for miniatures,
+/// interactive ColorFiltered LUT split-screen preview for digital presets,
 /// interactive color and size selectors, strictly positive quantity delimiter,
-/// and Add to Cart 🛒 / Buy Now 💰 actions.
+/// and Add to Cart 🛒 / Buy Now 💰 actions with Philippine Pesos (₱).
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
 
@@ -69,7 +72,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _buyNow() {
-    // Add to cart and immediately route to checkout
     CartController.instance.addItem(
       product: widget.product,
       color: _selectedColor,
@@ -152,9 +154,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Visual Component: 360° Scrubber (for miniatures) OR Zoomable image
+              // Visual Component:
+              // 1) 360° Scrubber (for miniatures)
+              // 2) ColorFiltered Split-Screen Preview (for presets/LUTs)
+              // 3) Zoomable image (for dice & maps)
               if (p.has360View)
                 ThreeSixtyViewer(images: p.galleryImages, heroTag: p.id)
+              else if (p.hasLutPreview)
+                LutSplitPreview(imageUrl: p.primaryImage)
               else
                 Container(
                   height: 320,
@@ -226,7 +233,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               const SizedBox(height: 20),
 
-              // Product Title, Category & Price Row
+              // Product Title, Category & Price Row (Philippine Pesos ₱)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -257,7 +264,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Price Tag (minimum £100!)
+                  // Price Tag in Philippine Pesos (₱)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
@@ -269,7 +276,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       border: Border.all(color: AppColors.gold),
                     ),
                     child: Text(
-                      '£${p.price.toStringAsFixed(0)}',
+                      CurrencyFormatter.format(p.price),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
@@ -507,7 +514,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
 
-      // STICKY BOTTOM ACTION BAR: Add to Cart 🛒 & Buy Now 💰
+      // STICKY BOTTOM ACTION BAR: Add to Cart 🛒 & Buy Now 💰 (Philippine Pesos ₱)
       bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -524,7 +531,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              // Total calculation
+              // Total calculation in Philippine Pesos (₱)
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +546,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   Text(
-                    '£${totalPrice.toStringAsFixed(0)}',
+                    CurrencyFormatter.format(totalPrice),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,

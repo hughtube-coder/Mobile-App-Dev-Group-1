@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 /// Featured item carousel showcasing spotlight products,
 /// 360° inspection features, and digital campaign modules.
@@ -20,8 +21,8 @@ class _HeroCarouselState extends State<HeroCarousel> {
 
   final List<Product> _featuredProducts = [
     Product.catalog.firstWhere((p) => p.id == 'mini-01'),
+    Product.catalog.firstWhere((p) => p.id == 'lut-01'),
     Product.catalog.firstWhere((p) => p.id == 'dice-02'),
-    Product.catalog.firstWhere((p) => p.id == 'map-01'),
   ];
 
   @override
@@ -115,20 +116,24 @@ class _HeroCarouselState extends State<HeroCarousel> {
                                   decoration: BoxDecoration(
                                     color: product.has360View
                                         ? AppColors.dragonRed
-                                        : AppColors.gold,
+                                        : (product.hasLutPreview
+                                              ? const Color(0xFF00695C)
+                                              : AppColors.gold),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     product.has360View
                                         ? '⚡ 360° SCRUBBER READY'
-                                        : (product.isDigital
-                                              ? 'INSTANT DOWNLOAD'
-                                              : 'AUTHENTIC REPAIR'),
+                                        : (product.hasLutPreview
+                                              ? '🎨 COLORFILTERED LUT TESTER'
+                                              : 'AUTHENTIC D&D DICE'),
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 1.2,
-                                      color: product.has360View
+                                      color:
+                                          product.has360View ||
+                                              product.hasLutPreview
                                           ? AppColors.parchment
                                           : AppColors.dungeon,
                                     ),
@@ -156,7 +161,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                               Row(
                                 children: [
                                   Text(
-                                    '£${product.price.toStringAsFixed(0)}',
+                                    CurrencyFormatter.format(product.price),
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,

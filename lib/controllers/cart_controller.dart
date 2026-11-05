@@ -28,9 +28,9 @@ class CartController extends ChangeNotifier {
   double get subtotal =>
       _items.fold<double>(0.0, (sum, item) => sum + item.totalPrice);
 
-  /// Standard flat delivery fee for hand-painted physical minis/dice within the realm.
-  /// Free delivery if the order contains only pure digital campaign maps!
-  double get deliveryFee => (hasPhysicalItems && !isEmpty) ? 15.0 : 0.0;
+  /// Standard flat delivery fee for hand-painted physical minis/dice in the Philippines (₱150).
+  /// Free delivery if the order contains only pure digital campaign maps or LUT presets!
+  double get deliveryFee => (hasPhysicalItems && !isEmpty) ? 150.0 : 0.0;
 
   double get grandTotal => subtotal + deliveryFee;
 

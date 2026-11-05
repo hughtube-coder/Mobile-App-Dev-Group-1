@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/cart_controller.dart';
 import '../models/cart_item.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 import '../widgets/quantity_stepper.dart';
 import 'checkout_screen.dart';
 
@@ -263,7 +264,7 @@ class CartScreen extends StatelessWidget {
                                       },
                                     ),
                                     Text(
-                                      '£${item.totalPrice.toStringAsFixed(0)}',
+                                      CurrencyFormatter.format(item.totalPrice),
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w900,
@@ -310,7 +311,7 @@ class CartScreen extends StatelessWidget {
                             style: TextStyle(color: AppColors.parchmentFaded),
                           ),
                           Text(
-                            '£${cart.subtotal.toStringAsFixed(0)}',
+                            CurrencyFormatter.format(cart.subtotal),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.parchment,
@@ -333,7 +334,7 @@ class CartScreen extends StatelessWidget {
                               const SizedBox(width: 4),
                               if (!cart.hasPhysicalItems)
                                 const Text(
-                                  '(Free for Digital Maps)',
+                                  '(Free for Digital Maps & Presets)',
                                   style: TextStyle(
                                     color: Colors.greenAccent,
                                     fontSize: 11,
@@ -344,7 +345,7 @@ class CartScreen extends StatelessWidget {
                           Text(
                             cart.deliveryFee == 0
                                 ? 'FREE'
-                                : '£${cart.deliveryFee.toStringAsFixed(0)}',
+                                : CurrencyFormatter.format(cart.deliveryFee),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: cart.deliveryFee == 0
@@ -367,7 +368,7 @@ class CartScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '£${cart.grandTotal.toStringAsFixed(0)}',
+                            CurrencyFormatter.format(cart.grandTotal),
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
