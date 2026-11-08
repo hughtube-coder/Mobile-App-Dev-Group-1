@@ -19,17 +19,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passkeyController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _paymentNoteController = TextEditingController();
 
   String _courierSpeed = 'standard';
   bool _agreedToGuildTerms = true;
+  bool _obscurePasskey = true;
   bool _isProcessing = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
+    _passkeyController.dispose();
     _addressController.dispose();
     _paymentNoteController.dispose();
     super.dispose();
@@ -321,7 +326,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 decoration: InputDecoration(
                   labelText: 'Guild Communication Email *',
                   hintText: 'hero@realm.dnd',
-                  prefixIcon: const Icon(Icons.email, color: AppColors.gold),
+                  prefixIcon: const Icon(
+                    Icons.email,
+                    color: AppColors.gold,
+                    semanticLabel: 'Email input icon',
+                  ),
                   filled: true,
                   fillColor: AppColors.stone.withValues(alpha: 0.6),
                   border: OutlineInputBorder(
@@ -338,10 +347,97 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please provide your email for digital keys and dispatch notices';
+                    return 'Please enter some text'; // Exact slide 2 validator text
                   }
                   if (!value.contains('@') || !value.contains('.')) {
                     return 'Enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // Input widget: TextFormField with TextInputType.number (Slide 1)
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppColors.parchment),
+                decoration: InputDecoration(
+                  labelText: 'Mobile / GCash / Maya Number (₱ Dispatch) *',
+                  hintText: 'e.g. 09171234567',
+                  prefixIcon: const Icon(
+                    Icons.phone_android,
+                    color: AppColors.gold,
+                    semanticLabel: 'Mobile phone numeric input',
+                  ),
+                  filled: true,
+                  fillColor: AppColors.stone.withValues(alpha: 0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.goldFaded),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: AppColors.gold,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter some text'; // Exact slide 2 validator text
+                  }
+                  if (value.trim().length < 7) {
+                    return 'Enter a valid contact number (at least 7 digits)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // Input widget: TextFormField with TextInputType.visiblePassword & obscureText (Slide 4)
+              TextFormField(
+                controller: _passkeyController,
+                keyboardType: TextInputType.visiblePassword,
+                obscureText: _obscurePasskey,
+                style: const TextStyle(color: AppColors.parchment),
+                decoration: InputDecoration(
+                  labelText: 'Adventurer Guild Secret Passcode / Vault PIN *',
+                  hintText: 'Enter secret rune phrase to seal transaction',
+                  prefixIcon: const Icon(
+                    Icons.lock,
+                    color: AppColors.gold,
+                    semanticLabel: 'Vault secret security passcode',
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePasskey ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.gold,
+                      semanticLabel: 'Toggle secret passcode visibility',
+                    ),
+                    onPressed: () => setState(() => _obscurePasskey = !_obscurePasskey),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.stone.withValues(alpha: 0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.goldFaded),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: AppColors.gold,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter some text'; // Exact slide 2 validator text
+                  }
+                  if (value.trim().length < 4) {
+                    return 'Passcode must be at least 4 characters long';
                   }
                   return null;
                 },

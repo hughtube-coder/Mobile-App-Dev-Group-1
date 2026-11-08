@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
@@ -86,14 +88,15 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Top Left: 360° / LUT Badge using Transform & Align
+                  // Top Left: 360° / LUT Badge using Transform & Align (Lecture Slide 6)
                   if (product.has360View)
                     Align(
                       alignment: Alignment.topLeft,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Transform.rotate(
-                          angle: -0.06,
+                        child: Transform(
+                          alignment: Alignment.topLeft,
+                          transform: Matrix4.skewY(0.08)..rotateZ(-math.pi / 28.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -114,10 +117,11 @@ class ProductCard extends StatelessWidget {
                                   Icons.threed_rotation,
                                   size: 12,
                                   color: AppColors.gold,
+                                  semanticLabel: '360 degree rotational inspection',
                                 ),
                                 SizedBox(width: 3),
                                 Text(
-                                  '360°',
+                                  '360° VIEW',
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
@@ -135,8 +139,9 @@ class ProductCard extends StatelessWidget {
                       alignment: Alignment.topLeft,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Transform.rotate(
-                          angle: -0.06,
+                        child: Transform(
+                          alignment: Alignment.topLeft,
+                          transform: Matrix4.skewY(0.08)..rotateZ(-math.pi / 28.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -157,6 +162,7 @@ class ProductCard extends StatelessWidget {
                                   Icons.tune,
                                   size: 12,
                                   color: AppColors.gold,
+                                  semanticLabel: 'ColorFiltered LUT split preview',
                                 ),
                                 SizedBox(width: 3),
                                 Text(
@@ -196,6 +202,7 @@ class ProductCard extends StatelessWidget {
                               Icons.star,
                               size: 12,
                               color: AppColors.gold,
+                              semanticLabel: 'Product review rating star',
                             ),
                             const SizedBox(width: 3),
                             Text(

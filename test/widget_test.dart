@@ -100,4 +100,20 @@ void main() {
       expect(find.text('2'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'Scaffold FloatingActionButton and Material 3 CarouselView render correctly',
+    (tester) async {
+      await tester.pumpWidget(const MarketingVikingsApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      // Verify FloatingActionButton (Slide 18)
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.text('Roll D20'), findsOneWidget);
+
+      // Verify CarouselView (Slide 16)
+      expect(find.byType(CarouselView), findsOneWidget);
+    },
+  );
 }

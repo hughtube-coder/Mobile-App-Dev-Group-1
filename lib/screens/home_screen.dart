@@ -9,6 +9,7 @@ import '../widgets/category_chip_bar.dart';
 import '../widgets/design_addons_placeholder.dart';
 import '../widgets/dice_roller_sheet.dart';
 import '../widgets/hero_carousel.dart';
+import '../widgets/material_carousel_view.dart';
 import '../widgets/product_card.dart';
 import '../widgets/section_title.dart';
 import 'cart_screen.dart';
@@ -339,6 +340,27 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
+      // FloatingActionButton on Scaffold (Lecture Slide 18)
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openDiceRoller,
+        backgroundColor: AppColors.gold,
+        foregroundColor: AppColors.dungeon,
+        tooltip: 'Roll Valhalla D20 Polyhedral Dice 🎲',
+        icon: const Icon(
+          Icons.casino,
+          color: AppColors.dungeon,
+          semanticLabel: 'Roll Valhalla D20 Polyhedral Dice',
+        ),
+        label: const Text(
+          'Roll D20',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.8,
+            color: AppColors.dungeon,
+          ),
+        ),
+      ),
+
       // Dynamic animated tavern background containing scrollable shop
       body: AnimatedTavernBackground(
         child: SingleChildScrollView(
@@ -445,6 +467,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Swipe horizontally to inspect featured treasures',
                     ),
                     HeroCarousel(onProductTap: _navigateToDetail),
+                    const SizedBox(height: 24),
+
+                    // Material 3 CarouselView (Lecture Slide 16)
+                    const SectionTitle(
+                      'Material 3 CarouselView • Featured Artifacts',
+                      subtitle:
+                          'Interactive card carousel built with Flutter Material 3 CarouselView',
+                    ),
+                    MaterialCarouselViewSection(onProductTap: _navigateToDetail),
                     const SizedBox(height: 24),
 
                     // Category Filter Chips
@@ -622,6 +653,68 @@ class _WelcomeBanner extends StatelessWidget {
               fontSize: 13,
               height: 1.4,
               color: AppColors.parchmentFaded,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Layout Widgets: Row with Expanded & FittedBox (Lecture Slide 19 & 25)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.dungeon.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.goldFaded),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '100% Non-AI Art',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.parchment,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Philippine Pesos (₱)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.shield,
+                          color: AppColors.gold,
+                          size: 14,
+                          semanticLabel: 'Guild Guarantee',
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Guild Guarantee',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.parchment,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

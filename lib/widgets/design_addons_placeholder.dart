@@ -72,7 +72,7 @@ class DesignAddonsPlaceholder extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
+                     letterSpacing: 1.5,
                     color: AppColors.gold,
                   ),
                 ),
@@ -87,6 +87,7 @@ class DesignAddonsPlaceholder extends StatelessWidget {
             child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               child: Placeholder(
+                fallbackWidth: 400.0,
                 fallbackHeight: 96,
                 color: AppColors.goldFaded,
                 strokeWidth: 1.2,
@@ -105,9 +106,9 @@ class DesignAddonsPlaceholder extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
+                            Text( 
                               'AR Miniature Tabletop Placer (Tap)',
-                              style: TextStyle(
+                              style: TextStyle ( 
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.parchment,
@@ -118,7 +119,7 @@ class DesignAddonsPlaceholder extends StatelessWidget {
                               'Preview 28mm/32mm miniatures directly on physical gaming mats.',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: TextStyle (
                                 fontSize: 11,
                                 color: AppColors.mutedText,
                               ),
@@ -142,6 +143,7 @@ class DesignAddonsPlaceholder extends StatelessWidget {
           GestureDetector(
             onTap: () => _openDiceRoller(context),
             child: Placeholder(
+              fallbackWidth: 400.0,
               fallbackHeight: 96,
               color: AppColors.gold,
               strokeWidth: 1.4,

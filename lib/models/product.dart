@@ -35,6 +35,7 @@ class Product {
   final List<ProductColorOption> colors;
   final List<String> sizes;
   final bool isDigital;
+  final bool isFeatured;
   final String photoCredit;
   final String license;
 
@@ -54,6 +55,7 @@ class Product {
     required this.colors,
     required this.sizes,
     this.isDigital = false,
+    this.isFeatured = false,
     required this.photoCredit,
     required this.license,
   });
@@ -91,6 +93,7 @@ class Product {
       ],
       sizes: ['28mm Heroic Scale', '32mm Tabletop', '75mm Collector Bust'],
       isDigital: false,
+      isFeatured: true,
       photoCredit:
           'The Metropolitan Museum of Art (Authentic Exhibition Sculpture)',
       license: 'Public Domain / CC0',
@@ -188,6 +191,7 @@ class Product {
       ],
       sizes: ['Standard 16mm Set (7pcs)', 'Deluxe 11-Piece (with 4d6)'],
       isDigital: false,
+      isFeatured: true,
       photoCredit: 'Wikimedia Commons gaming collection',
       license: 'CC BY 2.0',
     ),
@@ -236,6 +240,7 @@ class Product {
       ],
       sizes: ['8K Digital VTT (Foundry/Roll20)', 'Printable PDF 300DPI 36x24"'],
       isDigital: true,
+      isFeatured: true,
       photoCredit:
           'Olaus Magnus (1539) / Uppsala University / Wikimedia Commons',
       license: 'Public Domain',
@@ -297,6 +302,7 @@ class Product {
         'Creator Studio Commercial License',
       ],
       isDigital: true,
+      isFeatured: true,
       photoCredit: 'Warhammer gaming archive / Wikimedia Commons',
       license: 'CC BY-SA 4.0',
     ),
