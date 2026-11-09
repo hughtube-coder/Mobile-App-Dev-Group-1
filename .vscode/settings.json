@@ -1,7 +1,15 @@
 {
-  
   "dart.flutterSdkPath": "C:\\src\\flutter",
-
+  "git.path": "C:\\src\\git\\cmd\\git.exe",
+  "git.enabled": true,
+  "java.jdt.ls.java.home": "C:\\src\\jdk\\jdk-17.0.21+9",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "C:\\src\\jdk\\jdk-17.0.21+9",
+      "default": true
+    }
+  ],
   "cmake.ignoreCMakeListsMissing": true,
   "cmake.configureOnOpen": false
 }

@@ -21,8 +21,8 @@ class MaterialCarouselViewSection extends StatelessWidget {
         SizedBox(
           height: 200,
           child: CarouselView(
-            itemExtent: 310,
-            shrinkExtent: 220,
+            itemExtent: 320,
+            shrinkExtent: 260,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: const BorderSide(color: AppColors.goldFaded, width: 1.2),
@@ -130,14 +130,21 @@ class MaterialCarouselViewSection extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  CurrencyFormatter.format(product.price),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.gold,
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      CurrencyFormatter.format(product.price),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.gold,
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
