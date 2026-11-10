@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:marketing_vikings/controllers/auth_controller.dart';
 import 'package:marketing_vikings/main.dart';
 import 'package:marketing_vikings/models/product.dart';
 import 'package:marketing_vikings/utils/currency_formatter.dart';
@@ -137,6 +138,46 @@ void main() {
 
       // Verify CarouselView (Slide 16)
       expect(find.byType(CarouselView), findsOneWidget);
+    },
+  );
+
+  test(
+    'AuthController enforces strict password rules, Sign Up, Sign Out, Sign In, and Email OTP Reset',
+    () {
+      final auth = AuthController.instance;
+
+      // Weak password should fail strict validation
+      expect(AuthController.validateStrictPassword('weak'), isNotNull);
+      expect(AuthController.validateStrictPassword('Strong@2026'), isNull);
+
+      // Sign up a new user
+      final signUpRes = auth.signUp(
+        fullName: 'Freya Tester',
+        email: 'freya@vikings.ph',
+        password: 'Freya@2026',
+        role: 'Digital Creator & Seller',
+      );
+      expect(signUpRes.success, isTrue);
+      expect(signUpRes.emailAlert, isNotNull);
+      expect(auth.currentUser?.email, 'freya@vikings.ph');
+
+      // Sign Out
+      auth.signOut();
+      expect(auth.isSignedIn, isFalse);
+
+      // Email Password Reset OTP flow
+      final resetReq = auth.sendPasswordResetEmail('freya@vikings.ph');
+      expect(resetReq.success, isTrue);
+      expect(resetReq.otpCode, isNotNull);
+      expect(resetReq.otpCode!.length, 6);
+
+      final resetConfirm = auth.resetPasswordWithOtp(
+        email: 'freya@vikings.ph',
+        otpCode: resetReq.otpCode!,
+        newPassword: 'NewViking#99',
+      );
+      expect(resetConfirm.success, isTrue);
+      expect(auth.isSignedIn, isTrue);
     },
   );
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../controllers/vault_controller.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/product_photo.dart';
 
 /// Pure Digital Delivery Downloads Vault & Order Receipt Ledger.
 /// Stores all download links unlocked upon checkout so buyers can download
@@ -245,14 +246,9 @@ class _VaultScreenState extends State<VaultScreen> {
                             border: Border.all(color: Colors.white12),
                           ),
                           clipBehavior: Clip.antiAlias,
-                          child: Image.network(
-                            item.product.primaryImage,
+                          child: ProductPhoto(
+                            imageSource: item.product.primaryImage,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                                  Icons.folder_zip,
-                                  color: AppColors.gold,
-                                ),
                           ),
                         ),
                         const SizedBox(width: 12),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'product_photo.dart';
 
 /// Dart/Flutter Edge Feature (Tabletop RPG Miniatures & Dice Swap):
 /// Built-in 360-degree miniature paint job inspection scrubber.
@@ -154,17 +155,9 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
                       color: Colors.transparent,
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image.network(
-                        widget.images[_currentIndex],
+                      child: ProductPhoto(
+                        imageSource: widget.images[_currentIndex],
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: AppColors.mutedText,
-                                size: 48,
-                              ),
-                            ),
                       ),
                     ),
                   )
@@ -175,25 +168,9 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
                       color: Colors.transparent,
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image.network(
-                        widget.images[_currentIndex],
+                      child: ProductPhoto(
+                        imageSource: widget.images[_currentIndex],
                         fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.gold,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: AppColors.mutedText,
-                                size: 48,
-                              ),
-                            ),
                       ),
                     ),
                   ),

@@ -6,6 +6,7 @@ import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/lut_split_preview.dart';
+import '../widgets/product_photo.dart';
 import '../widgets/quantity_stepper.dart';
 import '../widgets/three_sixty_viewer.dart';
 import 'cart_screen.dart';
@@ -203,25 +204,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       InteractiveViewer(
                         minScale: 1.0,
                         maxScale: 3.0,
-                        child: Image.network(
-                          p.primaryImage,
+                        child: ProductPhoto(
+                          imageSource: p.primaryImage,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, progress) =>
-                              progress == null
-                              ? child
-                              : const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.gold,
-                                  ),
-                                ),
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Center(
-                                child: Icon(
-                                  Icons.broken_image,
-                                  color: AppColors.mutedText,
-                                  size: 48,
-                                ),
-                              ),
                         ),
                       ),
                       if (p.category == ProductCategory.digitalMaps &&

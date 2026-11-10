@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/auth_controller.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/vault_controller.dart';
 import '../controllers/wishlist_controller.dart';
@@ -15,6 +16,7 @@ import '../widgets/hero_carousel.dart';
 import '../widgets/material_carousel_view.dart';
 import '../widgets/product_card.dart';
 import '../widgets/section_title.dart';
+import 'auth_screen.dart';
 import 'cart_screen.dart';
 import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
@@ -169,6 +171,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _navigateToDetail(miniProduct);
   }
 
+  void _openAuthScreen({int initialTab = 0}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => AuthScreen(initialTab: initialTab)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final storeCategories = ProductCategory.forStore(_selectedStore);
@@ -196,6 +204,25 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: const SizedBox.shrink(),
         actions: [
+          // Account & Security Action (Sign In / Sign Out / Create Account / Email Reset)
+          AnimatedBuilder(
+            animation: AuthController.instance,
+            builder: (context, _) {
+              final signedIn = AuthController.instance.isSignedIn;
+              return IconButton(
+                icon: Icon(
+                  signedIn ? Icons.verified_user : Icons.login,
+                  color: signedIn ? Colors.greenAccent : AppColors.gold,
+                  semanticLabel: 'Account security and authentication',
+                ),
+                tooltip: signedIn
+                    ? 'Account & Security (Signed In)'
+                    : 'Sign In / Create Account',
+                onPressed: () => _openAuthScreen(initialTab: 0),
+              );
+            },
+          ),
+
           // Sell / Swap Creator Listing Studio Button
           IconButton(
             icon: const Icon(
@@ -578,6 +605,83 @@ class _HomeScreenState extends State<HomeScreen> {
                 ).push(MaterialPageRoute(builder: (_) => const CartScreen()));
               },
             ),
+            const Divider(color: Colors.white12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                'ACCOUNT & SECURITY VAULT 🔐',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  color: AppColors.gold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.login, color: AppColors.gold),
+              title: const Text(
+                'Sign In / Log In',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openAuthScreen(initialTab: 0);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.person_add_alt_1,
+                color: Colors.greenAccent,
+              ),
+              title: const Text(
+                'Create New Account (Sign Up)',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openAuthScreen(initialTab: 1);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.mark_email_read_outlined,
+                color: AppColors.gold,
+              ),
+              title: const Text(
+                'Email Password Reset (OTP)',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Send 6-digit reset code to email',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openAuthScreen(initialTab: 2);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text(
+                'Log Out / Sign Out',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                AuthController.instance.signOut();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Signed out of account. Tap Sign In anytime to log back in.',
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -609,9 +713,12 @@ class _HomeScreenState extends State<HomeScreen> {
           animation: Listenable.merge([
             VaultController.instance,
             WishlistController.instance,
+            AuthController.instance,
           ]),
           builder: (context, _) {
             final filtered = _filteredProducts;
+            final isSearchingOrFiltering =
+                _searchQuery.trim().isNotEmpty || _showFavoritesOnly;
 
             return SingleChildScrollView(
               child: Center(
@@ -625,16 +732,106 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Welcome Banner with Dual E-Commerce Type Header
-                        _WelcomeBanner(selectedStore: _selectedStore),
-                        const SizedBox(height: 14),
+                        // ACCOUNT & SECURITY STATUS BAR (Sign In / Sign Out / Create Account / Email Reset)
+                        _AccountSecurityBar(onOpenAuth: _openAuthScreen),
+                        const SizedBox(height: 12),
+
+                        // LIVE SEARCH & SORT BAR (Placed at the top so search results appear immediately below!)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.stone.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isSearchingOrFiltering
+                                  ? AppColors.gold
+                                  : AppColors.goldFaded,
+                              width: isSearchingOrFiltering ? 1.8 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.search,
+                                color: AppColors.gold,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  style: const TextStyle(
+                                    color: AppColors.parchment,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'Search LUTs, patterns, .stl, minis, dice, maps...',
+                                    hintStyle: TextStyle(
+                                      color: AppColors.mutedText,
+                                      fontSize: 13,
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() => _searchQuery = val);
+                                  },
+                                ),
+                              ),
+                              if (_searchQuery.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    size: 18,
+                                    color: AppColors.gold,
+                                  ),
+                                  tooltip: 'Clear search',
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                ),
+                              PopupMenuButton<ProductSortOption>(
+                                icon: const Icon(
+                                  Icons.sort,
+                                  color: AppColors.gold,
+                                ),
+                                tooltip: 'Sort items',
+                                color: AppColors.stone,
+                                onSelected: (option) =>
+                                    setState(() => _sortOption = option),
+                                itemBuilder: (context) =>
+                                    ProductSortOption.values.map((opt) {
+                                      return PopupMenuItem(
+                                        value: opt,
+                                        child: Text(
+                                          opt.label,
+                                          style: TextStyle(
+                                            color: opt == _sortOption
+                                                ? AppColors.gold
+                                                : AppColors.parchment,
+                                            fontWeight: opt == _sortOption
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
 
                         // DUAL E-COMMERCE MODE SWITCHER
                         _DualStoreSwitcher(
                           selectedStore: _selectedStore,
                           onSelectStore: _selectStore,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
 
                         // QUICK INTERACTIVE STUDIO LAB LAUNCHER BAR
                         SingleChildScrollView(
@@ -736,109 +933,86 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 14),
 
-                        // LIVE SEARCH & SORT BAR
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
+                        // Instant Search Mode: Automatically hides Guild Spotlight & Material 3 CarouselView
+                        // when searching or filtering by Saved so matching products appear right at the top!
+                        if (!isSearchingOrFiltering) ...[
+                          // Welcome Banner with Dual E-Commerce Type Header
+                          _WelcomeBanner(selectedStore: _selectedStore),
+                          const SizedBox(height: 18),
+
+                          // Featured Spotlight Carousel
+                          const SectionTitle(
+                            'Guild Spotlight: 360° Scrubber & LUT Tester',
+                            subtitle:
+                                'Tap any item to test the 360° 8-photo scrubber or ColorFiltered LUT split-screen slider',
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.stone.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.goldFaded),
+                          HeroCarousel(onProductTap: _navigateToDetail),
+                          const SizedBox(height: 22),
+
+                          // Material 3 CarouselView (Lecture Slide 16)
+                          const SectionTitle(
+                            'Material 3 CarouselView • Featured Artifacts',
+                            subtitle:
+                                'Interactive card carousel built with Flutter Material 3 CarouselView',
                           ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.search,
-                                color: AppColors.gold,
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: _searchController,
-                                  style: const TextStyle(
-                                    color: AppColors.parchment,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    hintText:
-                                        'Search LUTs, patterns, .stl, minis, dice, maps...',
-                                    hintStyle: TextStyle(
-                                      color: AppColors.mutedText,
-                                      fontSize: 13,
-                                    ),
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                  ),
-                                  onChanged: (val) {
-                                    setState(() => _searchQuery = val);
-                                  },
+                          MaterialCarouselViewSection(
+                            onProductTap: _navigateToDetail,
+                          ),
+                          const SizedBox(height: 22),
+                        ] else ...[
+                          // Active Search Banner (Confirms Spotlight & Carousels are collapsed for instant view)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.gold),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.manage_search,
+                                  color: AppColors.gold,
+                                  size: 20,
                                 ),
-                              ),
-                              if (_searchQuery.isNotEmpty)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.clear,
-                                    size: 18,
-                                    color: AppColors.mutedText,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _searchQuery.trim().isNotEmpty
+                                        ? 'Instant Search: Found ${filtered.length} matching item(s) for "${_searchQuery.trim()}"'
+                                        : 'Showing ${filtered.length} Saved Favorite item(s)',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.parchment,
+                                    ),
                                   ),
+                                ),
+                                TextButton(
                                   onPressed: () {
                                     _searchController.clear();
-                                    setState(() => _searchQuery = '');
+                                    setState(() {
+                                      _searchQuery = '';
+                                      _showFavoritesOnly = false;
+                                    });
                                   },
+                                  child: const Text(
+                                    'Show All',
+                                    style: TextStyle(
+                                      color: AppColors.gold,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                 ),
-                              PopupMenuButton<ProductSortOption>(
-                                icon: const Icon(
-                                  Icons.sort,
-                                  color: AppColors.gold,
-                                ),
-                                tooltip: 'Sort items',
-                                color: AppColors.stone,
-                                onSelected: (option) =>
-                                    setState(() => _sortOption = option),
-                                itemBuilder: (context) =>
-                                    ProductSortOption.values.map((opt) {
-                                      return PopupMenuItem(
-                                        value: opt,
-                                        child: Text(
-                                          opt.label,
-                                          style: TextStyle(
-                                            color: opt == _sortOption
-                                                ? AppColors.gold
-                                                : AppColors.parchment,
-                                            fontWeight: opt == _sortOption
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Featured Spotlight Carousel
-                        const SectionTitle(
-                          'Guild Spotlight: 360° Scrubber & LUT Tester',
-                          subtitle:
-                              'Tap any item to test the 360° 8-photo scrubber or ColorFiltered LUT split-screen slider',
-                        ),
-                        HeroCarousel(onProductTap: _navigateToDetail),
-                        const SizedBox(height: 24),
-
-                        // Material 3 CarouselView (Lecture Slide 16)
-                        const SectionTitle(
-                          'Material 3 CarouselView • Featured Artifacts',
-                          subtitle:
-                              'Interactive card carousel built with Flutter Material 3 CarouselView',
-                        ),
-                        MaterialCarouselViewSection(
-                          onProductTap: _navigateToDetail,
-                        ),
-                        const SizedBox(height: 24),
+                        ],
 
                         // Category Filter Chips (adapts to selected StoreType!)
                         SectionTitle(
@@ -950,6 +1124,158 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+/// Account & Security Status Bar displayed at the top of HomeScreen
+class _AccountSecurityBar extends StatelessWidget {
+  final void Function({int initialTab}) onOpenAuth;
+
+  const _AccountSecurityBar({required this.onOpenAuth});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = AuthController.instance.currentUser;
+    if (user == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.dragonRed.withValues(alpha: 0.25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.lock_outline, color: AppColors.gold, size: 18),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Signed Out (Guest Mode)',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.parchment,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => onOpenAuth(initialTab: 0),
+              icon: const Icon(Icons.login, size: 14, color: AppColors.gold),
+              label: const Text(
+                'Sign In',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gold,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => onOpenAuth(initialTab: 1),
+              icon: const Icon(
+                Icons.person_add_alt_1,
+                size: 14,
+                color: Colors.greenAccent,
+              ),
+              label: const Text(
+                'Sign Up',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.greenAccent,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.stone.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.verified_user,
+            color: Colors.greenAccent,
+            size: 16,
+            semanticLabel: 'Verified signed in account',
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => onOpenAuth(initialTab: 0),
+              child: Text(
+                '${user.fullName} (${user.email})',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.parchment,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: () => onOpenAuth(initialTab: 2),
+            icon: const Icon(
+              Icons.mark_email_read_outlined,
+              size: 13,
+              color: AppColors.gold,
+            ),
+            label: const Text(
+              'Email Reset',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: AppColors.gold,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: () {
+              AuthController.instance.signOut();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Signed out! Tap Sign In or Sign Up anytime.'),
+                ),
+              );
+            },
+            icon: const Icon(Icons.logout, size: 13, color: Colors.redAccent),
+            label: const Text(
+              'Log Out',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+            ),
+          ),
+        ],
       ),
     );
   }

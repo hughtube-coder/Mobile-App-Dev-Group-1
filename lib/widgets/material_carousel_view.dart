@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'product_photo.dart';
 
 /// Featured carousel implemented using Flutter Material 3's [CarouselView]
 /// exactly as taught in the Mobile Application Development lecture slides.
@@ -42,11 +43,9 @@ class MaterialCarouselViewSection extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       // Authentic photograph background
-                      Image.network(
-                        product.primaryImage,
+                      ProductPhoto(
+                        imageSource: product.primaryImage,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(color: AppColors.stone),
                       ),
 
                       // Vignette gradient for text contrast

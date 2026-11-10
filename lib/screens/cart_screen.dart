@@ -4,6 +4,7 @@ import '../controllers/cart_controller.dart';
 import '../models/cart_item.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/product_photo.dart';
 import '../widgets/quantity_stepper.dart';
 import 'checkout_screen.dart';
 
@@ -180,14 +181,9 @@ class CartScreen extends StatelessWidget {
                               border: Border.all(color: Colors.white12),
                             ),
                             clipBehavior: Clip.antiAlias,
-                            child: Image.network(
-                              item.product.primaryImage,
+                            child: ProductPhoto(
+                              imageSource: item.product.primaryImage,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                    Icons.broken_image,
-                                    color: AppColors.mutedText,
-                                  ),
                             ),
                           ),
                           const SizedBox(width: 12),

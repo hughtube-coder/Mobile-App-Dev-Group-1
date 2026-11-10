@@ -7,6 +7,7 @@ import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'product_photo.dart';
 
 /// Reusable product card displayed inside GridView and ListView listings.
 class ProductCard extends StatelessWidget {
@@ -48,25 +49,9 @@ class ProductCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    product.primaryImage,
+                  ProductPhoto(
+                    imageSource: product.primaryImage,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.gold,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(
-                        Icons.broken_image,
-                        color: AppColors.mutedText,
-                        size: 36,
-                      ),
-                    ),
                   ),
 
                   // Subtle gradient shadow on bottom of image

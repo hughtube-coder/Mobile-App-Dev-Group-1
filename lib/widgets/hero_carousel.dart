@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'product_photo.dart';
 
 /// Featured item carousel showcasing spotlight products,
 /// 360° inspection features, and digital campaign modules.
@@ -73,11 +74,9 @@ class _HeroCarouselState extends State<HeroCarousel> {
                       children: [
                         // Background image with dark fantasy vignette
                         Positioned.fill(
-                          child: Image.network(
-                            product.primaryImage,
+                          child: ProductPhoto(
+                            imageSource: product.primaryImage,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(color: AppColors.stone),
                           ),
                         ),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'product_photo.dart';
 
 /// Dart/Flutter Edge Feature (Digital Pattern & LUT Tester Market):
 /// Interactive split-screen slider using Flutter's [ColorFiltered] widget.
@@ -454,11 +455,9 @@ class _LutSplitPreviewState extends State<LutSplitPreview>
                       fit: StackFit.expand,
                       children: [
                         // Left / Background Layer: RAW Unfiltered Image
-                        Image.network(
-                          currentImageUrl,
+                        ProductPhoto(
+                          imageSource: currentImageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(color: AppColors.dungeon),
                         ),
 
                         // Right Layer: ColorFiltered with custom LUT Matrix + live intensity/exposure
@@ -466,11 +465,9 @@ class _LutSplitPreviewState extends State<LutSplitPreview>
                           clipper: _RightSideClipper(splitX: splitX),
                           child: ColorFiltered(
                             colorFilter: activeFilter,
-                            child: Image.network(
-                              currentImageUrl,
+                            child: ProductPhoto(
+                              imageSource: currentImageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(color: AppColors.dungeon),
                             ),
                           ),
                         ),

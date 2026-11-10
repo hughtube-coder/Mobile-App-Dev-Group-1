@@ -176,11 +176,19 @@ Every core widget category presented in the Mobile Application Development lectu
 
 ---
 
-### Day 15 – Building Installable Mobile `.APK` (`MarketingVikings.apk`) & Final Verification
-- **Focus:** Compiling the standalone Android `.apk` package for direct phone installation during the classroom presentation and completing all Day 1–15 documentation.
-- **System Changes Applied:**
-  - Executed `flutter test` — all automated widget and unit tests pass 100%.
-  - Built the installable Android application package and exported it directly to **`C:\App\marketing_vikings\MarketingVikings.apk`** so team members can copy it to their Android phones via USB, Google Drive, Messenger, or Telegram and install it directly.
+### Day 15 – 100x Interactive Studio Upgrades, Building Installable Mobile `.APK` (`MarketingVikings.apk`) & Final Verification
+- **Focus:** Adding high-impact interactive studio features, compiling the standalone Android `.apk` package for direct phone installation during the classroom presentation, and completing all Day 1–15 documentation.
+- **100x System Enhancements Applied:**
+  - **Strict & Secure Authentication (`lib/controllers/auth_controller.dart`, `lib/screens/auth_screen.dart`):** Added Sign In (Log In), Sign Out (Log Out), Create New Account (Sign Up) with a live 5-Rule Password Strength Meter, and **Email Password Reset with 6-Digit OTP Verification & Security Email Notification Log**.
+  - **16 Real, Non-AI Wikimedia Commons Photographs (`assets/images/*.jpg`, `lib/widgets/product_photo.dart`):** Downloaded 16 authentic, non-AI photographs of real painted tabletop miniatures, polyhedral dice, historic cartographic maps, tailoring sewing patterns, 3D prints, and studio portrait photography directly from Wikimedia Commons into `assets/images/` and wired `ProductPhoto` across all screens so **zero broken image icons (`Icons.broken_image`) can ever appear** online or offline.
+  - **Instant Search Results UX (`lib/screens/home_screen.dart`):** Positioned the Search Bar at the top of `HomeScreen` and automatically collapsed `Guild Spotlight` and `Material 3 CarouselView` whenever the user searches or filters by `Saved` so matching items appear immediately below the search bar without scrolling.
+  - **Upgraded `LutSplitPreview` Studio (`lib/widgets/lut_split_preview.dart`):** Added 6 sample phone photos (`Portrait Owl`, `Street Light`, `Tabletop Shot`, `Cosplay Cloak`, `Dice Macro`), 6 `ColorFiltered` presets, live **LUT Strength (`20%–100%`)** & **Exposure EV (`-25..+25`)** sliders, and an **`Auto Sweep`** presentation play button.
+  - **Upgraded `ThreeSixtyViewer` (`lib/widgets/three_sixty_viewer.dart`):** Added **3x Magnifying Loupe Pinch-to-Zoom Mode**, angle-by-angle miniature paint layer notes (`0°` to `315°`), and an interactive 8-angle scrubber slider.
+  - **Category-Specific Interactive Calculators (`lib/screens/product_detail_screen.dart`):** Added the **Tailor Fabric Yardage & Pattern Sheet Estimator** for Sewing Patterns, the **3D Print `.STL` Slicer Resin/Filament Estimator** for `.STL` files, and the **5ft Tactical VTT Grid Overlay** toggle for Digital Maps.
+  - **Persistent Unlocked Downloads Vault & Official Receipts (`lib/screens/vault_screen.dart`, `lib/controllers/vault_controller.dart`):** Stores all unlocked `.DNG`, `.PDF`, `.STL`, and `.ZIP` files after Simple Checkout with unique License Keys (`MV-LUT-STL-...`) and printable Peso (`₱`) receipts.
+  - **Community "Sell / Swap Item +" Creator Studio (`lib/widgets/creator_listing_modal.dart`):** Allows creators and players to publish new listings live into either Dual E-Commerce store (enforcing `price >= ₱100`).
+  - **Wishlist Favorites (`❤️`), Promo Vouchers (`VIKING10`, `CREATOR50`) & Multi-Polyhedral Dice (`D4–D100`):** Added bookmarking (`lib/controllers/wishlist_controller.dart`), cart promo chips (`lib/screens/cart_screen.dart`), one-tap `Quick Fill Demo` checkout (`lib/screens/checkout_screen.dart`), and full `D4`–`D100` dice rolling (`lib/widgets/dice_roller_sheet.dart`).
+  - **Compiled Final `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** with 0 analyzer errors and 100% widget test pass rate.
 
 ---
 
