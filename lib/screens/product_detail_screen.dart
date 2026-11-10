@@ -5,6 +5,7 @@ import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/auth_guard.dart';
 import '../widgets/lut_split_preview.dart';
 import '../widgets/product_photo.dart';
 import '../widgets/quantity_stepper.dart';
@@ -46,51 +47,65 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart() {
-    CartController.instance.addItem(
-      product: widget.product,
-      color: _selectedColor,
-      size: _selectedSize,
-      quantity: _quantity,
-    );
+    AuthGuard.protect(
+      context,
+      actionName: 'add this item to your cart',
+      onAuthenticated: () {
+        CartController.instance.addItem(
+          product: widget.product,
+          color: _selectedColor,
+          size: _selectedSize,
+          quantity: _quantity,
+        );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.stone,
-        behavior: SnackBarBehavior.floating,
-        content: Row(
-          children: [
-            const Icon(Icons.shopping_cart, color: AppColors.gold),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Added $_quantity x ${widget.product.name} to Cart 🛒',
-                style: const TextStyle(color: AppColors.parchment),
-              ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.stone,
+            behavior: SnackBarBehavior.floating,
+            content: Row(
+              children: [
+                const Icon(Icons.shopping_cart, color: AppColors.gold),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Added $_quantity x ${widget.product.name} to Cart 🛒',
+                    style: const TextStyle(color: AppColors.parchment),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: 'VIEW CART',
-          textColor: AppColors.gold,
-          onPressed: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const CartScreen()));
-          },
-        ),
-      ),
+            action: SnackBarAction(
+              label: 'VIEW CART',
+              textColor: AppColors.gold,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CartScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
   void _buyNow() {
-    CartController.instance.addItem(
-      product: widget.product,
-      color: _selectedColor,
-      size: _selectedSize,
-      quantity: _quantity,
-    );
+    AuthGuard.protect(
+      context,
+      actionName: 'proceed to buy this item',
+      onAuthenticated: () {
+        CartController.instance.addItem(
+          product: widget.product,
+          color: _selectedColor,
+          size: _selectedSize,
+          quantity: _quantity,
+        );
 
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => const CheckoutScreen()));
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CheckoutScreen()),
+        );
+      },
+    );
   }
 
   @override

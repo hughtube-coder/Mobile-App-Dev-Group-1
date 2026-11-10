@@ -7,6 +7,7 @@ import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'auth_guard.dart';
 import 'product_photo.dart';
 
 /// Reusable product card displayed inside GridView and ListView listings.
@@ -308,37 +309,44 @@ class ProductCard extends StatelessWidget {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () {
-                                  CartController.instance.addItem(
-                                    product: product,
-                                    color: product.colors.first,
-                                    size: product.sizes.first,
-                                    quantity: 1,
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: AppColors.stone,
-                                      behavior: SnackBarBehavior.floating,
-                                      content: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.shopping_cart,
-                                            color: AppColors.gold,
-                                            size: 18,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              'Added ${product.name} to cart!',
-                                              style: const TextStyle(
-                                                color: AppColors.parchment,
+                                  AuthGuard.protect(
+                                    context,
+                                    actionName: 'add items to your cart',
+                                    onAuthenticated: () {
+                                      CartController.instance.addItem(
+                                        product: product,
+                                        color: product.colors.first,
+                                        size: product.sizes.first,
+                                        quantity: 1,
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: AppColors.stone,
+                                          behavior: SnackBarBehavior.floating,
+                                          content: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.shopping_cart,
+                                                color: AppColors.gold,
+                                                size: 18,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  'Added ${product.name} to cart!',
+                                                  style: const TextStyle(
+                                                    color: AppColors.parchment,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                    ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                                 style: OutlinedButton.styleFrom(
@@ -366,7 +374,13 @@ class ProductCard extends StatelessWidget {
                             Expanded(
                               flex: 2,
                               child: ElevatedButton.icon(
-                                onPressed: onQuickBuy,
+                                onPressed: () {
+                                  AuthGuard.protect(
+                                    context,
+                                    actionName: 'buy this item',
+                                    onAuthenticated: onQuickBuy,
+                                  );
+                                },
                                 icon: const Icon(
                                   Icons.monetization_on,
                                   size: 14,

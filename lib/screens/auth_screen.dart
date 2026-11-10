@@ -246,12 +246,15 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leadingWidth: 165,
+        leadingWidth: 135,
         leading: const Padding(
-          padding: EdgeInsets.only(left: 8),
+          padding: EdgeInsets.only(left: 6),
           child: AppBarLogo(),
         ),
-        title: const Text('Account & Security 🔐'),
+        title: const Text(
+          'Account 🔐',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         actions: [
           if (Navigator.of(context).canPop())
             IconButton(
@@ -261,13 +264,14 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
         ],
       ),
-      body: AnimatedBuilder(
-        animation: AuthController.instance,
-        builder: (context, _) {
-          final auth = AuthController.instance;
-          final user = auth.currentUser;
+      body: SafeArea(
+        child: AnimatedBuilder(
+          animation: AuthController.instance,
+          builder: (context, _) {
+            final auth = AuthController.instance;
+            final user = auth.currentUser;
 
-          return SingleChildScrollView(
+            return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Center(
               child: ConstrainedBox(
@@ -370,6 +374,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           );
         },
+      ),
       ),
     );
   }

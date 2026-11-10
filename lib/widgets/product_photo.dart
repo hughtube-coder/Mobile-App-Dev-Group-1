@@ -107,6 +107,14 @@ class ProductPhoto extends StatelessWidget {
         fit: fit,
         width: width,
         height: height,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFF1E1710),
+            child: const Center(
+              child: Icon(Icons.shield, color: Color(0xFFD4A537), size: 36),
+            ),
+          );
+        },
       );
     }
 
@@ -119,19 +127,23 @@ class ProductPhoto extends StatelessWidget {
       height: height,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
-        return Image.asset(
-          'assets/images/mini_01.jpg',
-          fit: fit,
-          width: width,
-          height: height,
+        return const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFFD4A537),
+            ),
+          ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
-        return Image.asset(
-          'assets/images/mini_01.jpg',
-          fit: fit,
-          width: width,
-          height: height,
+        return Container(
+          color: const Color(0xFF1E1710),
+          child: const Center(
+            child: Icon(Icons.shield, color: Color(0xFFD4A537), size: 36),
+          ),
         );
       },
     );

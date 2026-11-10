@@ -8,6 +8,7 @@ import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_tavern_background.dart';
 import '../widgets/app_bar_logo.dart';
+import '../widgets/auth_guard.dart';
 import '../widgets/category_chip_bar.dart';
 import '../widgets/creator_listing_modal.dart';
 import '../widgets/design_addons_placeholder.dart';
@@ -52,9 +53,24 @@ class _HomeScreenState extends State<HomeScreen> {
   ProductSortOption _sortOption = ProductSortOption.featured;
   bool _showFavoritesOnly = false;
   final TextEditingController _searchController = TextEditingController();
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      final scrolled = _scrollController.hasClients && _scrollController.offset > 15;
+      if (scrolled != _isScrolled) {
+        setState(() => _isScrolled = scrolled);
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -127,14 +143,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _quickBuy(Product product) {
-    CartController.instance.addItem(
-      product: product,
-      color: product.colors.first,
-      size: product.sizes.first,
-      quantity: 1,
+    AuthGuard.protect(
+      context,
+      actionName: 'buy this item',
+      onAuthenticated: () {
+        CartController.instance.addItem(
+          product: product,
+          color: product.colors.first,
+          size: product.sizes.first,
+          quantity: 1,
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CheckoutScreen()),
+        );
+      },
     );
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => const CheckoutScreen()));
   }
 
   void _openDiceRoller() {
@@ -183,10 +206,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        elevation: _isScrolled ? 5.0 : 0.0,
+        shadowColor: AppColors.gold.withValues(alpha: 0.35),
+        bottom: _isScrolled
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(1.0),
+                child: Container(
+                  color: AppColors.gold.withValues(alpha: 0.25),
+                  height: 1.0,
+                ),
+              )
+            : null,
         // Optimized SVG Logo in AppBar
-        leadingWidth: 180,
+        leadingWidth: 155,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
+          padding: const EdgeInsets.only(left: 10),
           child: Align(
             alignment: Alignment.centerLeft,
             child: AppBarLogo(
@@ -204,25 +238,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: const SizedBox.shrink(),
         actions: [
-          // Account & Security Action (Sign In / Sign Out / Create Account / Email Reset)
-          AnimatedBuilder(
-            animation: AuthController.instance,
-            builder: (context, _) {
-              final signedIn = AuthController.instance.isSignedIn;
-              return IconButton(
-                icon: Icon(
-                  signedIn ? Icons.verified_user : Icons.login,
-                  color: signedIn ? Colors.greenAccent : AppColors.gold,
-                  semanticLabel: 'Account security and authentication',
-                ),
-                tooltip: signedIn
-                    ? 'Account & Security (Signed In)'
-                    : 'Sign In / Create Account',
-                onPressed: () => _openAuthScreen(initialTab: 0),
-              );
-            },
-          ),
-
           // Sell / Swap Creator Listing Studio Button
           IconButton(
             icon: const Icon(
@@ -719,8 +734,12 @@ class _HomeScreenState extends State<HomeScreen> {
             final filtered = _filteredProducts;
             final isSearchingOrFiltering =
                 _searchQuery.trim().isNotEmpty || _showFavoritesOnly;
+            final isFiltering = _selectedStore != StoreType.all ||
+                _selectedCategory != ProductCategory.all ||
+                isSearchingOrFiltering;
 
             return SingleChildScrollView(
+              controller: _scrollController,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 840),
@@ -933,13 +952,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Instant Search Mode: Automatically hides Guild Spotlight & Material 3 CarouselView
-                        // when searching or filtering by Saved so matching products appear right at the top!
-                        if (!isSearchingOrFiltering) ...[
-                          // Welcome Banner with Dual E-Commerce Type Header
-                          _WelcomeBanner(selectedStore: _selectedStore),
-                          const SizedBox(height: 18),
-
+                        // Instant Focus Mode: When searching, filtering by Saved, or selecting a specific Store Mode or Category,
+                        // Guild Spotlight & Material 3 CarouselView are collapsed so matching products appear right away!
+                        if (!isFiltering) ...[
                           // Featured Spotlight Carousel
                           const SectionTitle(
                             'Guild Spotlight: 360° Scrubber & LUT Tester',
@@ -960,7 +975,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 22),
                         ] else ...[
-                          // Active Search Banner (Confirms Spotlight & Carousels are collapsed for instant view)
+                          // Active Filter / Search Banner (Confirms carousels are collapsed for direct product view)
                           Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.symmetric(
@@ -983,8 +998,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Expanded(
                                   child: Text(
                                     _searchQuery.trim().isNotEmpty
-                                        ? 'Instant Search: Found ${filtered.length} matching item(s) for "${_searchQuery.trim()}"'
-                                        : 'Showing ${filtered.length} Saved Favorite item(s)',
+                                        ? 'Search: Found ${filtered.length} matching item(s) for "${_searchQuery.trim()}"'
+                                        : _showFavoritesOnly
+                                        ? 'Showing ${filtered.length} Saved Favorite item(s)'
+                                        : '${_selectedStore.label} • ${filtered.length} items',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -996,6 +1013,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onPressed: () {
                                     _searchController.clear();
                                     setState(() {
+                                      _selectedStore = StoreType.all;
+                                      _selectedCategory = ProductCategory.all;
                                       _searchQuery = '';
                                       _showFavoritesOnly = false;
                                     });
@@ -1112,6 +1131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const DesignAddonsPlaceholder(),
                         const SizedBox(height: 36),
+
+                        // Welcome Banner with Dual E-Commerce Type Header (Moved to bottom per user request)
+                        _WelcomeBanner(selectedStore: _selectedStore),
+                        const SizedBox(height: 28),
 
                         // Footer
                         const _Footer(),

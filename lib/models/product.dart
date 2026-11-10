@@ -138,12 +138,11 @@ class Product {
           'Interactive ColorFiltered split-screen LUT presets (.CUBE & Mobile .DNG) for creators & photographers.',
       fullDescription:
           'Professional color grading Lookup Tables (LUTs) engineered for mobile Lightroom, Premiere Pro, and DaVinci Resolve. Use the built-in ColorFiltered split-screen slider above to test how this filter transforms your phone photos in real time before purchasing! Pure digital delivery unlocks your download link immediately upon payment.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Experimentation_with_color_gel_photography.jpg/640px-Experimentation_with_color_gel_photography.jpg',
+      primaryImage: 'assets/images/lut_01.jpg',
       hasLutPreview: true,
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Experimentation_with_color_gel_photography.jpg/640px-Experimentation_with_color_gel_photography.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg/640px-Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg',
+        'assets/images/lut_01.jpg',
+        'assets/images/lut_02.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Warm Hearth Amber', color: Color(0xFFFFB300)),
@@ -172,12 +171,11 @@ class Product {
           'ColorFiltered preset suite calibrated for macro product photography, tabletop minis & moody reels.',
       fullDescription:
           'Specially crafted digital lookup tables (LUTs) designed to enhance warm acrylic glazes, deep studio shadows, and natural skin tones. Drag the split-screen slider or switch sample phone photos to preview the exact color matrix live in the app!',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg/640px-Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg',
+      primaryImage: 'assets/images/lut_02.jpg',
       hasLutPreview: true,
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg/640px-Edward_S._Curtis_portrait_of_a_Native_American_woman.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/D%26D_Game.jpg/640px-D%26D_Game.jpg',
+        'assets/images/lut_02.jpg',
+        'assets/images/lut_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Golden Hour Film', color: Color(0xFFD4A537)),
@@ -205,10 +203,9 @@ class Product {
           'Instant-download printable sewing pattern with seam allowances, notches & step-by-step illustrated guide.',
       fullDescription:
           'Complete digital garment maker sewing pattern graded across sizes XS–3XL. Includes layered PDF files formatted for home printers (A4 / US Letter), copy-shop wide format (A0), and direct fabric projector calibration files. Instant digital download link unlocks right after checkout.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Hosenschnittmuster_1898.png/640px-Hosenschnittmuster_1898.png',
+      primaryImage: 'assets/images/pattern_01.jpg',
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Hosenschnittmuster_1898.png/640px-Hosenschnittmuster_1898.png',
+        'assets/images/pattern_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Natural Oatmeal Linen', color: Color(0xFFD7CCC8)),
@@ -236,18 +233,17 @@ class Product {
           'Pre-supported watertight 3D print .STL & .LYS files for resin (SLA/MSLA) and filament (FDM) printers.',
       fullDescription:
           'High-precision manifold 3D printable .STL mesh package. Includes both pre-supported chitubox/lychee scenes and unsupported raw .STL parts with keyed joints. Inspect all 8 angles using our built-in 360° scrubber before downloading!',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Robot_3D_print.jpg/640px-Robot_3D_print.jpg',
+      primaryImage: 'assets/images/stl_01.jpg',
       has360View: true,
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Robot_3D_print.jpg/640px-Robot_3D_print.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Keno_mini_paint_009.JPG/640px-Keno_mini_paint_009.JPG',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/HATG_miniature_game.jpg/640px-HATG_miniature_game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/RedCraig_Warhammer_player_03.jpg/640px-RedCraig_Warhammer_player_03.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/D%26D_Game.jpg/640px-D%26D_Game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Fortepan_85649.jpg/640px-Fortepan_85649.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chess_pieces_close_up.jpg/640px-Chess_pieces_close_up.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LewisChessmenBM20.jpg/640px-LewisChessmenBM20.jpg',
+        'assets/images/stl_01.jpg',
+        'assets/images/mini_angle_1.jpg',
+        'assets/images/mini_angle_2.jpg',
+        'assets/images/mini_angle_3.jpg',
+        'assets/images/mini_angle_4.jpg',
+        'assets/images/mini_angle_5.jpg',
+        'assets/images/mini_angle_6.jpg',
+        'assets/images/mini_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Grey 8K Photopolymer Resin', color: Color(0xFF78909C)),
@@ -280,18 +276,17 @@ class Product {
           'Hand-painted 28mm 3D-printed miniature with 8-photo 360° paint inspection scrubber.',
       fullDescription:
           'A museum-grade tabletop miniature depicting a Sun-Priest champion adorned with ceremonial feathered headdress and ancestral relic blade. Painted with 14 micro-glazes, non-metallic metal (NMM) techniques, and sealed with ultra-matte protective varnish. Swipe horizontally across all 8 camera angles above to inspect the paint job!',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/HATG_miniature_game.jpg/640px-HATG_miniature_game.jpg',
+      primaryImage: 'assets/images/mini_01.jpg',
       has360View: true,
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/HATG_miniature_game.jpg/640px-HATG_miniature_game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Keno_mini_paint_009.JPG/640px-Keno_mini_paint_009.JPG',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/RedCraig_Warhammer_player_03.jpg/640px-RedCraig_Warhammer_player_03.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/D%26D_Game.jpg/640px-D%26D_Game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Fortepan_85649.jpg/640px-Fortepan_85649.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chess_pieces_close_up.jpg/640px-Chess_pieces_close_up.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LewisChessmenBM20.jpg/640px-LewisChessmenBM20.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Robot_3D_print.jpg/640px-Robot_3D_print.jpg',
+        'assets/images/mini_01.jpg',
+        'assets/images/mini_angle_1.jpg',
+        'assets/images/mini_angle_2.jpg',
+        'assets/images/mini_angle_3.jpg',
+        'assets/images/mini_angle_4.jpg',
+        'assets/images/mini_angle_5.jpg',
+        'assets/images/mini_angle_6.jpg',
+        'assets/images/mini_02.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Solar Crimson', color: Color(0xFF8B1E1E)),
@@ -318,18 +313,17 @@ class Product {
           'Custom 3D-printed resin snake-folk warlord painted with reptilian scales and poison wash.',
       fullDescription:
           'Terrifying ophidian terror ready for jungle or dungeon boss encounters. Each scale has been individually highlighted with toxic chartreuse and venomous teal, topped with gloss varnish on the venom glands.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/RedCraig_Warhammer_player_03.jpg/640px-RedCraig_Warhammer_player_03.jpg',
+      primaryImage: 'assets/images/mini_02.jpg',
       has360View: true,
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/RedCraig_Warhammer_player_03.jpg/640px-RedCraig_Warhammer_player_03.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Keno_mini_paint_009.JPG/640px-Keno_mini_paint_009.JPG',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/HATG_miniature_game.jpg/640px-HATG_miniature_game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/D%26D_Game.jpg/640px-D%26D_Game.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Fortepan_85649.jpg/640px-Fortepan_85649.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chess_pieces_close_up.jpg/640px-Chess_pieces_close_up.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/LewisChessmenBM20.jpg/640px-LewisChessmenBM20.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Robot_3D_print.jpg/640px-Robot_3D_print.jpg',
+        'assets/images/mini_02.jpg',
+        'assets/images/mini_angle_2.jpg',
+        'assets/images/mini_angle_1.jpg',
+        'assets/images/mini_angle_3.jpg',
+        'assets/images/mini_angle_4.jpg',
+        'assets/images/mini_angle_5.jpg',
+        'assets/images/mini_angle_6.jpg',
+        'assets/images/mini_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Viper Green', color: Color(0xFF2E7D32)),
@@ -353,11 +347,10 @@ class Product {
           'Balanced 7-piece RPG dice set (D4, D6, D8, D10, D%, D12, D20) with sharp hand-polished edges.',
       fullDescription:
           'Tournament-grade polyhedral dice set cast in high-density translucent crimson resin with gold-leaf numerals. Bubble-free vacuum casting ensures fair, randomized rolls for D&D 5e and Pathfinder sessions.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/6sided_dice_%28cropped%29.jpg/640px-6sided_dice_%28cropped%29.jpg',
+      primaryImage: 'assets/images/dice_01.jpg',
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/6sided_dice_%28cropped%29.jpg/640px-6sided_dice_%28cropped%29.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Dados_4_a_20_lados.jpg/640px-Dados_4_a_20_lados.jpg',
+        'assets/images/dice_01.jpg',
+        'assets/images/dice_02.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Dragonfire Red', color: Color(0xFFC62828)),
@@ -381,11 +374,10 @@ class Product {
           'Deep midnight blue dice with pearlescent swirls reminiscent of deep cosmos and arcane rifts.',
       fullDescription:
           'Crafted from heavy jewel-grade resin with deep pigment dispersion. High-contrast golden numerals ensure instant legibility across dimly-lit gaming tables. Includes velvet dice vault pouch.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Dados_4_a_20_lados.jpg/640px-Dados_4_a_20_lados.jpg',
+      primaryImage: 'assets/images/dice_02.jpg',
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Dados_4_a_20_lados.jpg/640px-Dados_4_a_20_lados.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/6sided_dice_%28cropped%29.jpg/640px-6sided_dice_%28cropped%29.jpg',
+        'assets/images/dice_02.jpg',
+        'assets/images/dice_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Astral Blue', color: Color(0xFF1565C0)),
@@ -410,11 +402,10 @@ class Product {
           'Instant 8K Digital Battle Map & One-Shot Campaign PDF with gridded/gridless VTT exports.',
       fullDescription:
           'A historic Nordic cartographic masterpiece adapted for VTT (Roll20, Foundry, Owlbear Rodeo) and tabletop sessions. Includes a 20-page Level 5 One-Shot Campaign PDF, monster statblocks, and 8K battle maps. Unlocks instant download link upon checkout!',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Carta_Marina.jpeg/640px-Carta_Marina.jpeg',
+      primaryImage: 'assets/images/map_01.jpg',
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Carta_Marina.jpeg/640px-Carta_Marina.jpeg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/OrteliusWorldMap1570.jpg/640px-OrteliusWorldMap1570.jpg',
+        'assets/images/map_01.jpg',
+        'assets/images/map_02.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Aged Parchment', color: Color(0xFFD7CCC8)),
@@ -443,11 +434,10 @@ class Product {
           'Arctic caldera battle maps and 24-page One-Shot Campaign PDF: "The Frost Serpent of Mount Hekla".',
       fullDescription:
           'Complete arctic wilderness digital module including 5 interconnected high-resolution battle maps, dynamic lighting walls for Foundry VTT, and a 24-page PDF one-shot adventure. Pure digital delivery unlocks immediately after payment.',
-      primaryImage:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/OrteliusWorldMap1570.jpg/640px-OrteliusWorldMap1570.jpg',
+      primaryImage: 'assets/images/map_02.jpg',
       galleryImages: [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/OrteliusWorldMap1570.jpg/640px-OrteliusWorldMap1570.jpg',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Carta_Marina.jpeg/640px-Carta_Marina.jpeg',
+        'assets/images/map_02.jpg',
+        'assets/images/map_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Glacial Ice', color: Color(0xFF80DEEA)),

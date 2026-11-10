@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
-// Marketing Vikings – Tabletop RPG Miniatures & Dice Swap
-// Day 1 – App skeleton
-// Widgets used: MaterialApp, Scaffold, AppBar, Column, Text, Placeholder
+// Marketing Vikings – Dual E-Commerce Mobile App
+// 1) Digital Pattern & LUT Tester Market
+// 2) Tabletop RPG Miniatures & Dice Swap
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Immersive mode: Hides Android 3-button navigation bar (<, O, []) so they
+  // go down and don't cover or block buttons inside the app.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
   runApp(const MarketingVikingsApp());
 }
 

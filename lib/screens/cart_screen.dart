@@ -4,6 +4,7 @@ import '../controllers/cart_controller.dart';
 import '../models/cart_item.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/auth_guard.dart';
 import '../widgets/product_photo.dart';
 import '../widgets/quantity_stepper.dart';
 import 'checkout_screen.dart';
@@ -440,10 +441,16 @@ class CartScreen extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const CheckoutScreen(),
-                              ),
+                            AuthGuard.protect(
+                              context,
+                              actionName: 'proceed to checkout',
+                              onAuthenticated: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const CheckoutScreen(),
+                                  ),
+                                );
+                              },
                             );
                           },
                           icon: const Icon(

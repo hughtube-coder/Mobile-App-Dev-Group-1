@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_theme.dart';
 
-/// Optimized SVG logo widget for the AppBar with interactive navigation function.
+/// Compact, elegant SVG logo widget for the AppBar with interactive tap feedback.
 class AppBarLogo extends StatefulWidget {
   final VoidCallback? onTap;
 
@@ -25,9 +25,9 @@ class _AppBarLogoState extends State<AppBarLogo>
       vsync: this,
       duration: const Duration(milliseconds: 120),
       lowerBound: 0.0,
-      upperBound: 0.12,
+      upperBound: 0.08,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
       CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
     );
   }
@@ -52,27 +52,27 @@ class _AppBarLogoState extends State<AppBarLogo>
         builder: (context, child) =>
             Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: AppColors.stone.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.goldFaded, width: 1.2),
+            color: AppColors.stone.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.goldFaded, width: 1.0),
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // SVG Logo optimized with flutter_svg
+                // Compact SVG Logo
                 SizedBox(
-                  width: 32,
-                  height: 32,
+                  width: 26,
+                  height: 26,
                   child: SvgPicture.asset(
                     'assets/logo.svg',
                     semanticsLabel: 'Marketing Vikings D20 Shield Logo',
                     placeholderBuilder: (context) => const SizedBox(
-                      width: 32,
-                      height: 32,
+                      width: 26,
+                      height: 26,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: AppColors.gold,
@@ -80,7 +80,7 @@ class _AppBarLogoState extends State<AppBarLogo>
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 7),
                 const Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,9 +88,9 @@ class _AppBarLogoState extends State<AppBarLogo>
                     Text(
                       'MARKETING',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 8.5,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 1.6,
+                        letterSpacing: 1.3,
                         color: AppColors.gold,
                         height: 1.1,
                       ),
@@ -98,9 +98,9 @@ class _AppBarLogoState extends State<AppBarLogo>
                     Text(
                       'VIKINGS',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 1.8,
+                        letterSpacing: 1.4,
                         color: AppColors.parchment,
                         height: 1.1,
                       ),
