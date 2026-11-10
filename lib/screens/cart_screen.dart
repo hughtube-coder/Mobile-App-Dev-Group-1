@@ -260,7 +260,7 @@ class CartScreen extends StatelessWidget {
                                     QuantityStepper(
                                       quantity: item.quantity,
                                       onChanged: (newQty) {
-                                        cart.incrementQuantity(item);
+                                        cart.updateQuantity(item, newQty);
                                       },
                                     ),
                                     Text(
@@ -323,34 +323,28 @@ class CartScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
+                          const Row(
                             children: [
-                              const Text(
-                                'Raven Delivery Courier',
+                              Icon(
+                                Icons.cloud_done_outlined,
+                                size: 15,
+                                color: Colors.greenAccent,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Instant Digital & Direct Unlock',
                                 style: TextStyle(
                                   color: AppColors.parchmentFaded,
+                                  fontSize: 13,
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              if (!cart.hasPhysicalItems)
-                                const Text(
-                                  '(Free for Digital Maps & Presets)',
-                                  style: TextStyle(
-                                    color: Colors.greenAccent,
-                                    fontSize: 11,
-                                  ),
-                                ),
                             ],
                           ),
-                          Text(
-                            cart.deliveryFee == 0
-                                ? 'FREE'
-                                : CurrencyFormatter.format(cart.deliveryFee),
+                          const Text(
+                            'FREE (₱0)',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: cart.deliveryFee == 0
-                                  ? Colors.greenAccent
-                                  : AppColors.parchment,
+                              color: Colors.greenAccent,
                             ),
                           ),
                         ],

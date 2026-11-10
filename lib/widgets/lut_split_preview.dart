@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Dart/Flutter Edge Feature:
+/// Dart/Flutter Edge Feature (Digital Pattern & LUT Tester Market):
 /// Interactive split-screen slider using Flutter's [ColorFiltered] widget.
-/// Allows creators and buyers to preview LUT and Lightroom filter effects
-/// by dragging a vertical divider across the image before purchasing.
+/// Allows creators and buyers to preview the seller's LUT/Lightroom filter effects
+/// on sample phone camera photos or their own custom photo before purchasing!
 class LutSplitPreview extends StatefulWidget {
   final String imageUrl;
 
@@ -20,11 +20,39 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
   double _splitFraction = 0.5;
 
   int _selectedPresetIndex = 0;
+  int _selectedPhonePhotoIndex = 0;
+  String? _customPhonePhotoUrl;
+
+  static const List<_SamplePhonePhoto> _phonePhotos = [
+    _SamplePhonePhoto(
+      label: 'Seller Sample',
+      icon: Icons.photo_camera_back,
+      url: '', // Uses widget.imageUrl
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Portrait Owl',
+      icon: Icons.smartphone,
+      // Authentic Flutter Slide 21 Owl photo
+      url: 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Street Light',
+      icon: Icons.smartphone,
+      url:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/800px-Camponotus_flavomarginatus_ant.jpg',
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Tabletop Shot',
+      icon: Icons.smartphone,
+      url:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Dungeons_%26_Dragons_Miniatures.jpg/800px-Dungeons_%26_Dragons_Miniatures.jpg',
+    ),
+  ];
 
   static const List<_LutPreset> _presets = [
     _LutPreset(
       name: 'Warm Hearth Amber',
-      description: 'Golden hour candle glow & warm tabletop miniatures look',
+      description: 'Golden hour candle glow & warm cinematic skin/portrait tones',
       filter: ColorFilter.matrix(<double>[
         1.25,
         0.0,
@@ -50,8 +78,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
     ),
     _LutPreset(
       name: 'Nordic Frost Cyan',
-      description:
-          'Cool glacial shadows with high-contrast icy magical weapons',
+      description: 'Cool glacial shadows with crisp teal & orange highlights',
       filter: ColorFilter.matrix(<double>[
         0.90,
         0.0,
@@ -77,7 +104,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
     ),
     _LutPreset(
       name: 'Grimdark Monochrome',
-      description: 'High dynamic range desaturated dramatic battle grimdark',
+      description: 'High dynamic range desaturated silver-gelatin film grain look',
       filter: ColorFilter.matrix(<double>[
         0.35,
         0.35,
@@ -103,7 +130,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
     ),
     _LutPreset(
       name: 'Dragon Fire Ruby',
-      description: 'Intense crimson saturation for lava bases & fire spells',
+      description: 'Intense crimson saturation for vibrant sunset & neon shots',
       filter: ColorFilter.matrix(<double>[
         1.45,
         0.0,
@@ -129,9 +156,89 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
     ),
   ];
 
+  String get _activePhotoUrl {
+    if (_customPhonePhotoUrl != null && _customPhonePhotoUrl!.isNotEmpty) {
+      return _customPhonePhotoUrl!;
+    }
+    final chosen = _phonePhotos[_selectedPhonePhotoIndex];
+    return chosen.url.isEmpty ? widget.imageUrl : chosen.url;
+  }
+
+  void _promptCustomPhonePhoto() {
+    final controller = TextEditingController(text: _customPhonePhotoUrl ?? '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.stone,
+        title: const Row(
+          children: [
+            Icon(Icons.add_photo_alternate, color: AppColors.gold),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Test LUT on Your Phone Photo',
+                style: TextStyle(color: AppColors.parchment, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Paste any photo URL or select a camera roll preset to preview this seller\'s ColorFiltered LUT before buying:',
+              style: TextStyle(color: AppColors.parchmentFaded, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              style: const TextStyle(color: AppColors.parchment, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'https://...',
+                hintStyle: const TextStyle(color: AppColors.mutedText),
+                filled: true,
+                fillColor: AppColors.dungeon,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() => _customPhonePhotoUrl = null);
+              Navigator.of(ctx).pop();
+            },
+            child: const Text(
+              'Reset to Default',
+              style: TextStyle(color: AppColors.mutedText),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _customPhonePhotoUrl = controller.text.trim();
+              });
+              Navigator.of(ctx).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: AppColors.dungeon,
+            ),
+            child: const Text('Apply Photo'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final activePreset = _presets[_selectedPresetIndex];
+    final currentImageUrl = _activePhotoUrl;
 
     return Container(
       decoration: BoxDecoration(
@@ -177,10 +284,78 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Drag the vertical divider horizontally to compare RAW photo vs applied LUT filter:',
+            'Drag the vertical split-screen slider to preview the seller\'s LUT filter on phone photos before purchasing:',
             style: TextStyle(fontSize: 12, color: AppColors.mutedText),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+
+          // Phone Photo Switcher Row ("Preview on Buyer's Phone Photos")
+          SizedBox(
+            height: 34,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _phonePhotos.length + 1,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                if (index == _phonePhotos.length) {
+                  final hasCustom =
+                      _customPhonePhotoUrl != null &&
+                      _customPhonePhotoUrl!.isNotEmpty;
+                  return ActionChip(
+                    avatar: Icon(
+                      Icons.add_a_photo,
+                      size: 14,
+                      color: hasCustom ? AppColors.dungeon : AppColors.gold,
+                    ),
+                    label: Text(
+                      hasCustom ? 'Custom Phone Photo ✓' : '+ My Phone Photo',
+                    ),
+                    backgroundColor: hasCustom
+                        ? AppColors.gold
+                        : AppColors.dungeon,
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: hasCustom
+                          ? AppColors.dungeon
+                          : AppColors.parchment,
+                    ),
+                    side: const BorderSide(color: AppColors.goldFaded),
+                    onPressed: _promptCustomPhonePhoto,
+                  );
+                }
+
+                final photo = _phonePhotos[index];
+                final isSelected =
+                    _customPhonePhotoUrl == null &&
+                    index == _selectedPhonePhotoIndex;
+
+                return ChoiceChip(
+                  label: Text(photo.label),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    setState(() {
+                      _customPhonePhotoUrl = null;
+                      _selectedPhonePhotoIndex = index;
+                    });
+                  },
+                  selectedColor: AppColors.gold.withValues(alpha: 0.25),
+                  backgroundColor: AppColors.dungeon,
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: isSelected ? AppColors.gold : AppColors.parchment,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.gold : Colors.white12,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
 
           // Split Screen Container
           SizedBox(
@@ -204,7 +379,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
                       children: [
                         // Left / Background Layer: RAW Unfiltered Image
                         Image.network(
-                          widget.imageUrl,
+                          currentImageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(color: AppColors.dungeon),
@@ -216,7 +391,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
                           child: ColorFiltered(
                             colorFilter: activePreset.filter,
                             child: Image.network(
-                              widget.imageUrl,
+                              currentImageUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(color: AppColors.dungeon),
@@ -239,7 +414,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
                               border: Border.all(color: Colors.white24),
                             ),
                             child: const Text(
-                              'BEFORE (RAW)',
+                              'BEFORE (RAW PHOTO)',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -364,6 +539,18 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
       ),
     );
   }
+}
+
+class _SamplePhonePhoto {
+  final String label;
+  final IconData icon;
+  final String url;
+
+  const _SamplePhonePhoto({
+    required this.label,
+    required this.icon,
+    required this.url,
+  });
 }
 
 class _LutPreset {

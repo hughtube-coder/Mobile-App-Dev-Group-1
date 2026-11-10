@@ -28,9 +28,9 @@ class CartController extends ChangeNotifier {
   double get subtotal =>
       _items.fold<double>(0.0, (sum, item) => sum + item.totalPrice);
 
-  /// Standard flat delivery fee for hand-painted physical minis/dice in the Philippines (₱150).
-  /// Free delivery if the order contains only pure digital campaign maps or LUT presets!
-  double get deliveryFee => (hasPhysicalItems && !isEmpty) ? 150.0 : 0.0;
+  /// Pure Digital Delivery & Direct Guild Swap:
+  /// Zero shipping/courier fees! Once paid, the app unlocks instant download links.
+  double get deliveryFee => 0.0;
 
   double get grandTotal => subtotal + deliveryFee;
 
@@ -58,6 +58,14 @@ class CartController extends ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  /// Updates an item's quantity while strictly enforcing the positive delimiter (quantity >= 1).
+  void updateQuantity(CartItem item, int newQuantity) {
+    if (newQuantity >= 1) {
+      item.quantity = newQuantity;
+      notifyListeners();
+    }
   }
 
   void incrementQuantity(CartItem item) {

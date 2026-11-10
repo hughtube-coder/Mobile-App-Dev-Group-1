@@ -26,16 +26,12 @@ enum ProductSortOption {
   final String label;
 }
 
-/// Marketing Vikings: Tabletop RPG Miniatures & Dice Swap
-/// Main Shop Screen featuring:
-/// - AppBar with optimized SVG logo & cart badge
-/// - Dynamic animated tavern background
-/// - Live search and sorting filter
-/// - Featured Hero Carousel
-/// - Horizontal Category Chips (Minis, Dice, Digital Maps, LUTs)
-/// - Responsive GridView of authentic non-AI product items (min ₱100)
-/// - Interactive Valhalla D20 Dice Roller tool
-/// - Placeholders for upcoming design add-ons
+/// Marketing Vikings: Dual E-Commerce Type Marketplace
+/// 1) Digital Pattern & LUT Tester Market (Lightroom LUTs, Sewing Patterns, 3D Print .STL files)
+///    - Pure digital delivery — unlocks instant download links upon payment.
+///    - Dart/Flutter Edge: ColorFiltered widget + split-screen slider to preview filters on phone photos.
+/// 2) Tabletop RPG Miniatures & Dice Swap (3 Categories: Minis, Dice, Digital Maps)
+///    - Dart/Flutter Edge: Built-in 360-degree image scrubber (8-photo horizontal sequence).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -44,6 +40,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  StoreType _selectedStore = StoreType.all;
   ProductCategory _selectedCategory = ProductCategory.all;
   String _searchQuery = '';
   ProductSortOption _sortOption = ProductSortOption.featured;
@@ -55,8 +52,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _selectStore(StoreType store) {
+    setState(() {
+      _selectedStore = store;
+      final validCategories = ProductCategory.forStore(store);
+      if (!validCategories.contains(_selectedCategory)) {
+        _selectedCategory = ProductCategory.all;
+      }
+    });
+  }
+
   List<Product> get _filteredProducts {
     List<Product> list = Product.catalog;
+
+    // Filter by Dual E-Commerce Store Type
+    if (_selectedStore != StoreType.all) {
+      list = list.where((p) => p.category.storeType == _selectedStore).toList();
+    }
 
     // Filter by Category
     if (_selectedCategory != ProductCategory.all) {
@@ -76,13 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
     // Sort
     switch (_sortOption) {
       case ProductSortOption.priceAsc:
-        list.sort((a, b) => a.price.compareTo(b.price));
+        list = List<Product>.from(list)
+          ..sort((a, b) => a.price.compareTo(b.price));
         break;
       case ProductSortOption.priceDesc:
-        list.sort((a, b) => b.price.compareTo(a.price));
+        list = List<Product>.from(list)
+          ..sort((a, b) => b.price.compareTo(a.price));
         break;
       case ProductSortOption.rating:
-        list.sort((a, b) => b.rating.compareTo(a.rating));
+        list = List<Product>.from(list)
+          ..sort((a, b) => b.rating.compareTo(a.rating));
         break;
       case ProductSortOption.featured:
         break;
@@ -120,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredProducts;
+    final storeCategories = ProductCategory.forStore(_selectedStore);
 
     return Scaffold(
       appBar: AppBar(
@@ -132,6 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: AppBarLogo(
               onTap: () {
                 setState(() {
+                  _selectedStore = StoreType.all;
                   _selectedCategory = ProductCategory.all;
                   _searchQuery = '';
                   _searchController.clear();
@@ -204,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // Navigation Drawer
+      // Navigation Drawer showcasing Dual E-Commerce Type stores & categories
       drawer: Drawer(
         backgroundColor: AppColors.stone,
         child: ListView(
@@ -225,89 +242,181 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppBarLogo(
                     onTap: () {
                       Navigator.of(context).pop();
-                      setState(() => _selectedCategory = ProductCategory.all);
+                      setState(() {
+                        _selectedStore = StoreType.all;
+                        _selectedCategory = ProductCategory.all;
+                      });
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   const Text(
-                    'Tabletop RPG Miniatures & Dice Swap',
+                    'Dual E-Commerce Marketplace',
+                    style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const Text(
+                    '1) Digital Pattern & LUT Market\n2) Tabletop RPG Minis & Dice Swap',
                     style: TextStyle(
                       color: AppColors.parchment,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                      height: 1.3,
                     ),
                   ),
                 ],
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.auto_awesome, color: AppColors.gold),
+              leading: const Icon(Icons.storefront, color: AppColors.gold),
               title: const Text(
-                'All Items',
-                style: TextStyle(color: AppColors.parchment),
+                'Dual Catalog (All Stores)',
+                style: TextStyle(
+                  color: AppColors.parchment,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               onTap: () {
-                setState(() => _selectedCategory = ProductCategory.all);
+                setState(() {
+                  _selectedStore = StoreType.all;
+                  _selectedCategory = ProductCategory.all;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            const Divider(color: Colors.white12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                'STORE 1: DIGITAL PATTERN & LUT MARKET',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  color: AppColors.gold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.tune, color: AppColors.gold),
+              title: const Text(
+                'Lightroom LUTs (ColorFiltered)',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Split-screen slider on phone photos',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() {
+                  _selectedStore = StoreType.digitalCreator;
+                  _selectedCategory = ProductCategory.presets;
+                });
                 Navigator.of(context).pop();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.shield, color: AppColors.gold),
+              leading: const Icon(Icons.content_cut, color: AppColors.gold),
               title: const Text(
-                'Painted Miniatures',
+                'Sewing Patterns (.PDF / .DXF)',
                 style: TextStyle(color: AppColors.parchment),
               ),
               subtitle: const Text(
-                'With 360° inspection scrubber',
+                'Pure digital delivery • Instant unlock',
                 style: TextStyle(fontSize: 11, color: AppColors.mutedText),
               ),
               onTap: () {
-                setState(() => _selectedCategory = ProductCategory.minis);
+                setState(() {
+                  _selectedStore = StoreType.digitalCreator;
+                  _selectedCategory = ProductCategory.sewingPatterns;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.view_in_ar, color: AppColors.gold),
+              title: const Text(
+                '3D Print .STL Files',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Pre-supported .STL meshes',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() {
+                  _selectedStore = StoreType.digitalCreator;
+                  _selectedCategory = ProductCategory.stlFiles;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            const Divider(color: Colors.white12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                'STORE 2: TABLETOP RPG & DICE SWAP (3 CATEGORIES)',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  color: AppColors.gold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.shield, color: AppColors.gold),
+              title: const Text(
+                'Minis (Painted 3D-Printed)',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              subtitle: const Text(
+                'Built-in 360° 8-photo image scrubber',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                setState(() {
+                  _selectedStore = StoreType.tabletopRpg;
+                  _selectedCategory = ProductCategory.minis;
+                });
                 Navigator.of(context).pop();
               },
             ),
             ListTile(
               leading: const Icon(Icons.casino, color: AppColors.gold),
               title: const Text(
-                'Custom Dice Sets',
+                'Dice (Custom Polyhedral Sets)',
                 style: TextStyle(color: AppColors.parchment),
               ),
               subtitle: const Text(
-                'Artisan resin & metal polyhedrals',
+                'Artisan resin & metal D&D sets',
                 style: TextStyle(fontSize: 11, color: AppColors.mutedText),
               ),
               onTap: () {
-                setState(() => _selectedCategory = ProductCategory.dice);
+                setState(() {
+                  _selectedStore = StoreType.tabletopRpg;
+                  _selectedCategory = ProductCategory.dice;
+                });
                 Navigator.of(context).pop();
               },
             ),
             ListTile(
               leading: const Icon(Icons.map, color: AppColors.gold),
               title: const Text(
-                'Digital Maps & One-Shots',
+                'Digital Maps & One-Shot PDFs',
                 style: TextStyle(color: AppColors.parchment),
               ),
               subtitle: const Text(
-                'Instant download delivery',
+                'Instant VTT & campaign PDF unlock',
                 style: TextStyle(fontSize: 11, color: AppColors.mutedText),
               ),
               onTap: () {
-                setState(() => _selectedCategory = ProductCategory.digitalMaps);
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.tune, color: AppColors.gold),
-              title: const Text(
-                'LUTs & Presets (ColorFiltered)',
-                style: TextStyle(color: AppColors.parchment),
-              ),
-              subtitle: const Text(
-                'Split-screen live filter tester',
-                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
-              ),
-              onTap: () {
-                setState(() => _selectedCategory = ProductCategory.presets);
+                setState(() {
+                  _selectedStore = StoreType.tabletopRpg;
+                  _selectedCategory = ProductCategory.digitalMaps;
+                });
                 Navigator.of(context).pop();
               },
             ),
@@ -375,11 +484,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Welcome Banner
-                    const _WelcomeBanner(),
-                    const SizedBox(height: 18),
+                    // Welcome Banner with Dual E-Commerce Type Header
+                    _WelcomeBanner(selectedStore: _selectedStore),
+                    const SizedBox(height: 14),
 
-                    // LIVE SEARCH & SORT BAR (100x improvement)
+                    // DUAL E-COMMERCE MODE SWITCHER
+                    _DualStoreSwitcher(
+                      selectedStore: _selectedStore,
+                      onSelectStore: _selectStore,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // LIVE SEARCH & SORT BAR
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -406,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               decoration: const InputDecoration(
                                 hintText:
-                                    'Search painted minis, dice, maps, LUTs...',
+                                    'Search LUTs, patterns, .stl, minis, dice, maps...',
                                 hintStyle: TextStyle(
                                   color: AppColors.mutedText,
                                   fontSize: 13,
@@ -462,9 +578,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Featured Spotlight Carousel
                     const SectionTitle(
-                      'Guild Spotlight & 360° Previews',
+                      'Guild Spotlight: 360° Scrubber & LUT Tester',
                       subtitle:
-                          'Swipe horizontally to inspect featured treasures',
+                          'Tap any item to test the 360° 8-photo scrubber or ColorFiltered LUT split-screen slider',
                     ),
                     HeroCarousel(onProductTap: _navigateToDetail),
                     const SizedBox(height: 24),
@@ -475,15 +591,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       subtitle:
                           'Interactive card carousel built with Flutter Material 3 CarouselView',
                     ),
-                    MaterialCarouselViewSection(onProductTap: _navigateToDetail),
+                    MaterialCarouselViewSection(
+                      onProductTap: _navigateToDetail,
+                    ),
                     const SizedBox(height: 24),
 
-                    // Category Filter Chips
-                    const SectionTitle(
-                      'Categories',
-                      subtitle: 'Filter miniatures, custom dice, digital maps, or presets',
+                    // Category Filter Chips (adapts to selected StoreType!)
+                    SectionTitle(
+                      _selectedStore == StoreType.tabletopRpg
+                          ? 'Tabletop RPG Categories (Minis, Dice, Digital Maps)'
+                          : _selectedStore == StoreType.digitalCreator
+                          ? 'Digital Creator Categories (LUTs, Patterns, .STL)'
+                          : 'Dual Market Categories',
+                      subtitle: _selectedStore.subtitle,
                     ),
                     CategoryChipBar(
+                      categories: storeCategories,
                       selectedCategory: _selectedCategory,
                       onSelect: (cat) =>
                           setState(() => _selectedCategory = cat),
@@ -494,15 +617,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SectionTitle(
-                          _selectedCategory.label,
-                          subtitle:
-                              '${filtered.length} Items • Minimum ₱100 • ${_sortOption.label}',
+                        Expanded(
+                          child: SectionTitle(
+                            _selectedCategory.label,
+                            subtitle:
+                                '${filtered.length} Items • Minimum ₱100 • ${_sortOption.label}',
+                          ),
                         ),
-                        if (_selectedCategory != ProductCategory.all ||
+                        if (_selectedStore != StoreType.all ||
+                            _selectedCategory != ProductCategory.all ||
                             _searchQuery.isNotEmpty)
                           TextButton(
                             onPressed: () => setState(() {
+                              _selectedStore = StoreType.all;
                               _selectedCategory = ProductCategory.all;
                               _searchQuery = '';
                               _searchController.clear();
@@ -580,12 +707,124 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Top banner introducing the marketplace and D&D community focus
-class _WelcomeBanner extends StatelessWidget {
-  const _WelcomeBanner();
+/// Interactive Switcher Bar for the Dual E-Commerce Type architecture
+class _DualStoreSwitcher extends StatelessWidget {
+  final StoreType selectedStore;
+  final ValueChanged<StoreType> onSelectStore;
+
+  const _DualStoreSwitcher({
+    required this.selectedStore,
+    required this.onSelectStore,
+  });
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.stone.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.goldFaded, width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.layers, color: AppColors.gold, size: 16),
+              SizedBox(width: 6),
+              Text(
+                'SELECT E-COMMERCE MARKETPLACE MODE:',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  color: AppColors.gold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: StoreType.values.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final store = StoreType.values[index];
+                final isSelected = store == selectedStore;
+                return ChoiceChip(
+                  avatar: Icon(
+                    store.icon,
+                    size: 16,
+                    color: isSelected ? AppColors.dungeon : AppColors.gold,
+                  ),
+                  label: Text(store.label),
+                  selected: isSelected,
+                  onSelected: (_) => onSelectStore(store),
+                  selectedColor: AppColors.gold,
+                  backgroundColor: AppColors.dungeon,
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected
+                        ? FontWeight.w900
+                        : FontWeight.w600,
+                    color: isSelected
+                        ? AppColors.dungeon
+                        : AppColors.parchment,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.gold : AppColors.goldFaded,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Top banner introducing the Dual E-Commerce Type marketplace
+class _WelcomeBanner extends StatelessWidget {
+  final StoreType selectedStore;
+
+  const _WelcomeBanner({required this.selectedStore});
+
+  @override
+  Widget build(BuildContext context) {
+    final String headline;
+    final String description;
+
+    switch (selectedStore) {
+      case StoreType.digitalCreator:
+        headline = 'Digital Pattern & LUT Tester Market';
+        description =
+            'A micro-store for digital creators selling Lightroom presets (LUTs), '
+            'sewing patterns, and 3D print .stl files. Pure digital delivery—once paid, '
+            'the app unlocks instant download links. Includes a ColorFiltered split-screen '
+            'slider to preview filters on phone photos.';
+        break;
+      case StoreType.tabletopRpg:
+        headline = 'Tabletop RPG Miniatures & Dice Swap';
+        description =
+            'A niche marketplace for D&D and board game players to buy/sell painted '
+            '3D-printed miniatures, custom dice sets, and one-shot campaign PDFs across '
+            'three dedicated categories: Minis, Dice, and Digital Maps—complete with a '
+            'built-in 360° 8-photo image scrubber.';
+        break;
+      case StoreType.all:
+        headline = 'Dual E-Commerce: LUT & Pattern Market + RPG Swap';
+        description =
+            'Combining (1) Digital Pattern & LUT Tester Market (Lightroom LUTs with '
+            'ColorFiltered split-screen preview, Sewing Patterns, 3D Print .STL files, '
+            'and instant download unlocks) with (2) Tabletop RPG Miniatures & Dice Swap '
+            '(Minis with 8-photo 360° scrubber, Custom Dice, and Digital Maps).';
+        break;
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -617,7 +856,7 @@ class _WelcomeBanner extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
-                  'PHILIPPINE TABLETOP GUILD',
+                  'DUAL E-COMMERCE SYSTEM',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -630,26 +869,24 @@ class _WelcomeBanner extends StatelessWidget {
               const Icon(Icons.verified, color: Colors.greenAccent, size: 16),
               const SizedBox(width: 4),
               const Text(
-                'Pesos (₱) • Non-AI',
+                'Pesos (₱) • Instant Unlock',
                 style: TextStyle(color: Colors.greenAccent, fontSize: 11),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Tabletop RPG Miniatures & Dice Swap',
-            style: TextStyle(
-              fontSize: 22,
+          Text(
+            headline,
+            style: const TextStyle(
+              fontSize: 21,
               fontWeight: FontWeight.w900,
               color: AppColors.parchment,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'A niche community exchange for D&D and board game adventurers in the Philippines. '
-            'Buy and trade hand-painted 3D-printed miniatures with 360° inspection, '
-            'custom polyhedral dice sets, digital campaign maps, and ColorFiltered LUT presets.',
-            style: TextStyle(
+          Text(
+            description,
+            style: const TextStyle(
               fontSize: 13,
               height: 1.4,
               color: AppColors.parchmentFaded,
@@ -742,7 +979,7 @@ class _Footer extends StatelessWidget {
               Icon(Icons.shield_moon, color: AppColors.gold, size: 16),
               SizedBox(width: 6),
               Text(
-                'Marketing Vikings • Mobile Application Development',
+                'Marketing Vikings • Dual E-Commerce Mobile App',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -753,7 +990,7 @@ class _Footer extends StatelessWidget {
           ),
           SizedBox(height: 4),
           Text(
-            'All product photos are authentic physical miniatures and historic cartography from Wikimedia Commons. Denominated in Philippine Pesos (₱).',
+            'Digital Pattern & LUT Tester Market + Tabletop RPG Miniatures & Dice Swap. Denominated in Philippine Pesos (₱).',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11, color: AppColors.mutedText),
           ),

@@ -4,14 +4,17 @@ import '../models/product.dart';
 import '../theme/app_theme.dart';
 
 /// Horizontal scrollable category selector bar using ListView.
+/// Adapts dynamically to the active Dual E-Commerce StoreType.
 class CategoryChipBar extends StatelessWidget {
   final ProductCategory selectedCategory;
   final ValueChanged<ProductCategory> onSelect;
+  final List<ProductCategory> categories;
 
   const CategoryChipBar({
     super.key,
     required this.selectedCategory,
     required this.onSelect,
+    this.categories = ProductCategory.values,
   });
 
   @override
@@ -22,10 +25,10 @@ class CategoryChipBar extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        itemCount: ProductCategory.values.length,
+        itemCount: categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
-          final cat = ProductCategory.values[index];
+          final cat = categories[index];
           final isSelected = cat == selectedCategory;
 
           return Container(

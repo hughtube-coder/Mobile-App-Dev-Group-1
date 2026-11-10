@@ -1,198 +1,199 @@
-# Marketing Vikings – Development Log & Lecture Documentation
-**Application:** Tabletop RPG Miniatures & Dice Swap (Philippine Guild Exchange)  
-**Course:** Mobile Application Development (Flutter)  
-**Target Environment:** Flutter 3.47.8 (Stable), Web & Mobile (Android/iOS)  
-**Currency Standard:** Philippine Pesos (₱) • Minimum Delimiter: ₱100  
-**Asset Standard:** 100% Authentic Non-AI Photography (Wikimedia Commons Public Domain & Creative Commons)
+# Marketing Vikings – Development Log & System Journey (Day 1 to Day 15)
+**Application:** Marketing Vikings – Dual E-Commerce Type Marketplace  
+1. **Digital Pattern & LUT Tester Market** *(Lightroom Presets/LUTs, Sewing Patterns, 3D Print `.STL` Files)*  
+2. **Tabletop RPG Miniatures & Dice Swap** *(Focused 3-Category Community Market: Minis, Dice, Digital Maps)*  
+
+**Course:** Mobile Application Development (Dart & Flutter)  
+**Target Environment:** Flutter 3.47.8 (Stable), Installable Android `.APK` (`MarketingVikings.apk`) & Web  
+**Currency Standard:** Philippine Pesos (`₱`) • Minimum Price Delimiter: `₱100` • Quantity Delimiter: `quantity >= 1` (No negative quantity)  
+**Asset Standard:** 100% Authentic Non-AI Photography (Wikimedia Commons Public Domain / Creative Commons & Official Flutter Docs)
 
 ---
 
-## Executive Summary & Lecture Widgets Index
+## 1. What Changed & What Applied (Product Specification Transition Summary)
 
-This application was engineered step-by-step from **Day 1 to the final day (Day 8)** to implement every core widget category presented in the Mobile Application Development lecture slides:
+When finalizing the project with the team leader, we aligned the system to the official **Dual E-Commerce Type** product specification. Below is the exact breakdown of **what changed** and **what was applied** across the codebase:
+
+| Requirement Area | Previous Version (v1.7 – Single RPG Concept) | Updated Final Version (v2.0 – Dual E-Commerce Type) | Files Updated & Applied |
+|---|---|---|---|
+| **Marketplace Concept** | Single Tabletop RPG Miniatures & Dice store with a bonus LUT category. | **Full Dual E-Commerce Type Architecture** with an interactive **Marketplace Mode Switcher** (`Dual E-Commerce (All)`, `Digital Pattern & LUT Market`, and `Tabletop RPG & Dice Swap`). | `lib/models/product.dart`, `lib/screens/home_screen.dart`, `lib/widgets/category_chip_bar.dart` |
+| **Store Type 1: Digital Pattern & LUT Tester Market** | Only had 1 LUT preset item; did not include Sewing Patterns or standalone 3D Print `.STL` files. | Full micro-store for digital creators selling **Lightroom Presets (LUTs)** (`lut-01`, `lut-02`), **Sewing Patterns (`.PDF`/`.DXF`)** (`pattern-01`), and **3D Print `.STL` Files** (`stl-01`). | `lib/models/product.dart` |
+| **Store Type 1 Dart/Flutter Edge (`ColorFiltered` + Phone Photos)** | Had a `ColorFiltered` split-screen slider that only previewed the seller's default product image. | Upgraded `LutSplitPreview` with a **"📱 Preview Filter on Phone Photos"** bar (`Seller Sample`, `📱 Phone: Portrait Owl`, `📱 Phone: Street Light`, `📱 Phone: Tabletop Shot`, and `+ My Phone Photo` URL dialog) so buyers can test the seller's filter on phone photos before purchasing. | `lib/widgets/lut_split_preview.dart` |
+| **Store Type 2: Tabletop RPG Miniatures & Dice Swap** | Mixed 4 categories together in one bar. | Strictly focused on the **three passionate community categories**: **Minis**, **Dice**, and **Digital Maps** when `Tabletop RPG & Dice Swap` mode is selected (`ProductCategory.forStore(StoreType.tabletopRpg)`). | `lib/models/product.dart`, `lib/widgets/category_chip_bar.dart`, `lib/screens/home_screen.dart` |
+| **Store Type 2 Dart/Flutter Edge (360° 8-Photo Scrubber)** | 360-degree horizontal image scrubber across 8 photos. | Preserved and highlighted on painted miniatures (`mini-01`, `mini-02`) so buyers can swipe horizontally across an 8-photo sequence to inspect the paint job. | `lib/widgets/three_sixty_viewer.dart`, `lib/screens/product_detail_screen.dart` |
+| **Delivery & Simple Checkout Model** | Included physical shipping address fields, courier speed selectors, and a ₱150 physical delivery fee. | **Pure Digital Delivery & Simple Checkout**: Removed shipping addresses, couriers, and physical delivery fees (`₱0` fee). Once paid, the confirmation dialog immediately **unlocks instant download links** (`downloadFileName`) for every purchased item. | `lib/screens/checkout_screen.dart`, `lib/controllers/cart_controller.dart`, `lib/screens/cart_screen.dart` |
+| **Core E-Commerce Controls** | Quantity stepper in Cart had a bug where tapping `-` called `incrementQuantity`. | Fixed Cart `QuantityStepper` via `cart.updateQuantity(item, newQty)` enforcing `quantity >= 1` (strictly no negative or zero quantity), alongside interactive **Color & Size** selectors and **Add to Cart 🛒** / **Remove ❗** confirmation. | `lib/controllers/cart_controller.dart`, `lib/screens/cart_screen.dart`, `lib/widgets/quantity_stepper.dart` |
+| **Installable Mobile App (`.APK`)** | Tested in Chrome / VS Code desktop runner. | Restored JDK 17, Git, and Android SDK integration and compiled the standalone installable Android package **`MarketingVikings.apk`** (`C:\App\marketing_vikings\MarketingVikings.apk`) for direct phone installation. | `android/app/build.gradle.kts`, `MarketingVikings.apk` |
+
+---
+
+## 2. Executive Summary & Lecture Widgets Index (All 26 Slides Applied)
+
+Every core widget category presented in the Mobile Application Development lecture slides is implemented and preserved in the Dual E-Commerce codebase:
 
 | Category | Lecture Widgets Implemented | Code Implementation File(s) |
 |---|---|---|
-| **Basic Widgets** | `AppBar`, `Scaffold`, `Column`, `Row`, `Container`, `ElevatedButton`, `Icon`, `Text`, `Placeholder`, `Image` | `lib/screens/home_screen.dart`, `lib/widgets/app_bar_logo.dart`, `lib/widgets/design_addons_placeholder.dart`, `lib/widgets/product_card.dart` |
-| **Layout Widgets** | `Padding`, `Align`, `SizedBox`, `Transform` (with `Matrix4.skewY` & `rotateZ`) | `lib/widgets/product_card.dart`, `lib/widgets/hero_carousel.dart`, `lib/widgets/lut_split_preview.dart` |
+| **Basic Widgets** | `AppBar`, `Scaffold` (with `FloatingActionButton`), `Column`, `Row` (with `Expanded` & `FittedBox`), `Container`, `ElevatedButton`, `Icon` (with `semanticLabel`), `Text`, `Placeholder`, `Image` | `lib/screens/home_screen.dart`, `lib/widgets/app_bar_logo.dart`, `lib/widgets/design_addons_placeholder.dart`, `lib/widgets/product_card.dart` |
+| **Layout Widgets** | `Padding`, `Align`, `SizedBox`, `Transform` (with `Matrix4.skewY` & `rotateZ`) | `lib/widgets/product_card.dart`, `lib/widgets/hero_carousel.dart`, `lib/widgets/lut_split_preview.dart`, `lib/widgets/dice_roller_sheet.dart` |
 | **Scrolling Widgets** | `ListView`, `GridView` (`GridView.builder`), `CarouselView` (Material 3) | `lib/screens/home_screen.dart`, `lib/widgets/material_carousel_view.dart`, `lib/screens/cart_screen.dart`, `lib/widgets/category_chip_bar.dart` |
 | **Input Widgets** | `Form`, `FormField<T>`, `TextFormField` (`TextInputType.number`, `emailAddress`, `visiblePassword`, `obscureText`) | `lib/screens/checkout_screen.dart` |
-| **Key Components** | `GlobalKey<FormState>`, Validator logic, State access | `lib/screens/checkout_screen.dart` |
+| **Key Components** | `GlobalKey<FormState>`, Validator logic (`'Please enter some text'`), State access | `lib/screens/checkout_screen.dart` |
 
 ---
 
-## Day-by-Day Development Progression (Day 1 to Final Day)
+## 3. Complete Day-by-Day Development Journey (Day 1 to Day 15)
 
 ### Day 1 – App Initialization, Architecture & Basic Widgets Skeleton
 - **Focus:** Flutter SDK setup, initial directory structure, theme palette, and screen wireframing.
 - **Widgets Explored & Implemented:**
-  - `MaterialApp`: Root application widget configuring dark theme and home route.
-  - `Scaffold`: Structural layout container with initial app bar and body canvas.
-  - `AppBar`: Top application bar for brand identity.
-  - `Column`: Vertical layout array organizing section headers and wireframe boxes.
-  - `Text`: Styled headings and body typography for table RPG lore.
-  - `Placeholder`: Visual debugging tool (`fallbackWidth: 400.0`, `fallbackHeight: 96.0`, `color: AppColors.goldFaded`, `strokeWidth: 1.2`) marking upcoming features.
-- **Milestone Outcome:** Successfully created `c:\App\marketing_vikings`, verified `flutter run -d chrome`, and established initial dark tavern palette in `lib/theme/app_theme.dart`.
+  - `MaterialApp`: Root application widget configuring dark theme and home route (`lib/main.dart`).
+  - `Scaffold` & `AppBar`: Structural layout container with top application bar for brand identity.
+  - `Column` & `Text`: Vertical layout array organizing section headers and styled headings.
+  - `Placeholder`: Visual debugging wireframe (`fallbackWidth: 400.0`, `fallbackHeight: 96.0`, `color: AppColors.goldFaded`, `strokeWidth: 1.2`) in `lib/widgets/design_addons_placeholder.dart` (Lecture Slide 20).
+- **Milestone Outcome:** Created `C:\App\marketing_vikings` and established the dark Nordic/Creator palette in `lib/theme/app_theme.dart`.
 
 ---
 
 ### Day 2 – Branding, Vector Assets & Core Layout Widgets
 - **Focus:** Custom branding, vector rendering, ambient animated particle lighting, and responsive layout constraints.
 - **Widgets Explored & Implemented:**
-  - `Padding`: Uniform `EdgeInsets.all(16.0)` and symmetric spacing across cards and headers.
-  - `Align`: Positioning top-left category badges, top-right rating badges, and header elements (`Alignment.centerLeft`, `Alignment.topRight`).
-  - `SizedBox`: Explicit dimension bounding for cards (`SizedBox(width: 200, height: 300)`) and vertical spacers.
-  - `Transform`: Dynamic angled rotation (`Transform.rotate(angle: -0.06, child: ...)`) giving cards an authentic RPG treasure tag feel.
+  - `Padding`, `Align`, `SizedBox`: Uniform `EdgeInsets.all(16.0)`, badge alignment (`Alignment.topLeft`, `Alignment.topRight`), and explicit card dimensions.
+  - `Transform`: Dynamic angled rotation and matrix skewing on product badges.
   - `Drawer`: Side navigation drawer equipped with `ListView` and `ListTile` items.
-- **Custom Enhancements:**
-  - Handcrafted `assets/logo.svg` featuring a Nordic Viking shield and D20 silhouette.
-  - `AnimatedTavernBackground`: Custom animated canvas painting floating golden embers across the background.
+- **Custom Enhancements:** Handcrafted `assets/logo.svg` and `AnimatedTavernBackground`.
 
 ---
 
 ### Day 3 – Domain Architecture, Non-AI Catalog & Scrolling Widgets
-- **Focus:** Real tabletop RPG data models, 100% authentic non-AI artwork, Philippine Peso pricing, and scrollable lists/grids.
+- **Focus:** Product data models, 100% authentic non-AI artwork from Wikimedia Commons, Philippine Peso (`₱`) pricing, and scrollable lists/grids.
 - **Widgets Explored & Implemented:**
-  - `ListView` (Horizontal): `CategoryChipBar` allowing quick filtering across Minis, Dice, Maps, and LUTs with badges.
-  - `GridView` (`GridView.builder`): High-performance 2-column product catalog (`crossAxisCount: 2, crossAxisSpacing: 14, mainAxisSpacing: 14, childAspectRatio: 0.58`).
-  - `CarouselView` (Material 3): Integrated official Material 3 `CarouselView(itemExtent: 310, shrinkExtent: 220, children: ...)` in `MaterialCarouselViewSection` matching lecture Slide 16.
-  - `ElevatedButton`: Quick-add 🛒 and Buy Now 💰 buttons styled with `ElevatedButton.styleFrom(backgroundColor: AppColors.gold)`.
-- **Domain Constraints Enforced:**
-  - Strict **minimum price delimiter of ₱100** across all items in `Product.catalog`.
-  - Curated high-resolution photographs from Wikimedia Commons with public domain / CC attribution.
+  - `ListView` (Horizontal): `CategoryChipBar` for horizontal category filtering (Lecture Slide 14).
+  - `GridView` (`GridView.builder`): Responsive 2-column product catalog (Lecture Slide 15).
+  - `CarouselView` (Material 3): Official Material 3 `CarouselView(itemExtent: 310, shrinkExtent: 260, children: ...)` in `MaterialCarouselViewSection` (Lecture Slide 16).
+  - `ElevatedButton`: Quick-add 🛒 and Buy Now 💰 buttons (Lecture Slide 23).
+- **Domain Constraints Enforced:** Strict **minimum price delimiter of ₱100** across all items in `Product.catalog`.
 
 ---
 
-### Day 4 – Interactive 360° Inspection Scrubber & LUT Split Tester
-- **Focus:** Custom interactive e-commerce preview tools for tabletop hobbyists.
+### Day 4 – Interactive 360° Inspection Scrubber & LUT Split Tester Prototype
+- **Focus:** Building the two signature Dart/Flutter Edge interactive widgets.
 - **Widgets Explored & Implemented:**
-  - `Image` / `Image.network`: Responsive image loading with `loadingBuilder` and `errorBuilder`.
-  - `Row`: Horizontal alignment of quantity steppers, action buttons, and ratings.
-  - `Container`: Decorated boxes with gradients, border radii, and drop shadows (`BoxShadow(color: Colors.black45, blurRadius: 10)`).
+  - `Image.network` with custom `loadingBuilder` and `errorBuilder` (Lecture Slide 21).
+  - `Row` & `Container` with gradients, borders, and drop shadows (Lecture Slides 19 & 24).
 - **Interactive Tools Developed:**
-  - `ThreeSixtyViewer`: Horizontal drag scrubber cycling smoothly through 8 authentic high-res camera angles of physical miniatures.
-  - `LutSplitPreview`: `ColorFiltered` split-screen preview slider allowing digital painters to test color grading lookup tables (Warm Hearth Amber, Nordic Frost Cyan, Grimdark Monochrome, Dragon Fire Ruby) in real time.
-  - `QuantityStepper`: Delimiter component strictly enforcing positive quantities (`quantity >= 1`, minus button disabled at 1).
+  - `ThreeSixtyViewer`: Built-in 360-degree image scrubber swiping horizontally across a sequence of 8 photos (`lib/widgets/three_sixty_viewer.dart`).
+  - `LutSplitPreview`: Initial `ColorFiltered` split-screen slider (`lib/widgets/lut_split_preview.dart`).
+  - `QuantityStepper`: Delimiter component strictly enforcing positive quantities (`quantity >= 1`, minus button disabled at 1) (`lib/widgets/quantity_stepper.dart`).
 
 ---
 
 ### Day 5 – Stateful Cart Management & Validated Forms
-- **Focus:** Cart state management, order calculation, and lecture form validation.
+- **Focus:** Cart state management (`CartController`), color & size variant tracking (`CartItem`), and lecture form validation.
 - **Widgets Explored & Implemented:**
-  - `Form`: Top-level form container grouping adventurer checkout inputs.
-  - `GlobalKey<FormState>`: Form key used to trigger `_formKey.currentState!.validate()`.
-  - `FormField<T>`: Custom form field implementations:
-    - `FormField<String>` for courier dispatch speed selection.
-    - `FormField<bool>` for Guild Covenant & Terms acceptance checkbox with custom error display.
-  - `TextFormField`:
-    - Full Name input with minimum rune length validation.
-    - Email address input with `@` and `.` structure checks.
-    - Physical Realm shipping address (conditionally required only for physical miniatures and dice).
-- **Cart Logic:** `CartController` (ChangeNotifier) automatically applies free delivery for digital battle maps and flat ₱150 shipping for physical miniatures.
+  - `Form` & `GlobalKey<FormState>`: Form container and validation key (`_formKey.currentState!.validate()`) in `lib/screens/checkout_screen.dart` (Lecture Slides 2, 3, 11).
+  - `FormField<String>` & `FormField<bool>`: Custom selection and terms checkbox fields with inline validation errors (Lecture Slides 5, 12).
+  - `TextFormField`: Validated text inputs for buyer name and email address.
 
 ---
 
 ### Day 6 – Polyhedral Dice Physics & Floating Action Button
 - **Focus:** Interactive tabletop utility and quick action controls.
 - **Widgets Explored & Implemented:**
-  - `Scaffold.floatingActionButton`: Floating action button (`FloatingActionButton.extended`) anchored to the bottom-right of the screen for rolling the D20 dice at any moment (Lecture Slide 18).
-  - `Transform` (Matrix Transformation): Exact lecture Slide 6 syntax:
-    ```dart
-    Transform(
-      alignment: Alignment.topLeft,
-      transform: Matrix4.skewY(0.08)..rotateZ(-math.pi / 28.0),
-      child: Container(...),
-    )
-    ```
-    applied to promotional "360° VIEW", "LUT SLIDER", and "DISCOUNTED!" badges.
-- **Utility Developed:** `DiceRollerSheet` simulating a weighted 20-sided die with rolling animations, custom sound vibrations, critical hit (Natural 20) celebratory banners, and critical fumble (Natural 1) alerts.
+  - `Scaffold.floatingActionButton`: `FloatingActionButton.extended` anchored to the bottom-right of `HomeScreen` (Lecture Slide 18).
+  - `Transform` (Matrix Transformation): Exact Lecture Slide 6 syntax `Transform(alignment: Alignment.topLeft, transform: Matrix4.skewY(0.08)..rotateZ(-math.pi / 28.0), child: ...)` applied in `ProductCard` and `DiceRollerSheet`.
 
 ---
 
-### Day 7 – Advanced Form Inputs & Instant Digital Delivery
-- **Focus:** Completing specialized input widget types from lecture slides and simulated instant asset delivery.
+### Day 7 – Advanced Form Inputs (Numeric & Obscured Password Fields)
+- **Focus:** Completing specialized input widget types from Lecture Slides 1 & 4.
 - **Widgets Explored & Implemented:**
-  - `TextFormField` with `keyboardType: TextInputType.number` (Lecture Slide 1):
-    - Added dedicated mobile number / GCash / Maya dispatch input.
-    - Uses exact lecture validator pattern: `if (value == null || value.trim().isEmpty) return 'Please enter some text';`.
-  - `TextFormField` with `keyboardType: TextInputType.visiblePassword` and `obscureText: true` (Lecture Slide 4):
-    - Added Adventurer Guild Vault Secret Passcode input with interactive eye icon to toggle rune visibility.
-- **Digital Delivery Simulation:**
-  - Added order confirmation modal featuring instant digital key unlocks for 8K VTT battle maps and PDF campaigns with simulated download tokens and receipt ledger summaries.
+  - `TextFormField` with `keyboardType: TextInputType.number` for GCash/Maya mobile payment numbers (Lecture Slide 1).
+  - `TextFormField` with `keyboardType: TextInputType.visiblePassword` and `obscureText: true` for the Download Vault PIN with visibility toggle (Lecture Slide 4).
 
 ---
 
-### Day 8 – Testing, Accessibility (A11y), Code Cleanliness & Submission Readiness
-- **Focus:** Automated widget test suite, accessibility announcements, and final clean-room verification.
+### Day 8 – Accessibility (`semanticLabel`) & Baseline Widget Test Suite
+- **Focus:** Screen reader accessibility and automated widget testing.
 - **Widgets Explored & Implemented:**
-  - `Icon` with `semanticLabel` (Lecture Slide 22):
-    ```dart
-    Icon(
-      Icons.casino,
-      color: AppColors.gold,
-      size: 24.0,
-      semanticLabel: 'Roll Valhalla D20 Polyhedral Dice',
-    )
-    ```
-    added across all icons to support screen readers and TalkBack/VoiceOver accessibility.
-- **Verification Metrics:**
-  - Automated analysis: `analyze_files` report: **No errors (0 warnings, 0 issues)**.
-  - Widget tests: 100% passed (`test/widget_test.dart` verifying home screen rendering, Philippine Peso currency formatting, positive quantity stepper boundary, FloatingActionButton presence, and Material 3 CarouselView rendering).
+  - `Icon` with `semanticLabel` (Lecture Slide 22) across all primary icons.
+  - Created `test/widget_test.dart` verifying Peso formatting, positive quantity stepper delimiter, `FloatingActionButton`, and `CarouselView`.
 
 ---
 
-## Project Updates & Version Changelog ("Things like update for documents")
-
-### [Update v1.7.0] – Final Classroom Release & Accessibility Overhaul
-- **Added:** `semanticLabel` to every major `Icon` widget across the application according to Lecture Slide 22.
-- **Added:** `MaterialCarouselViewSection` utilizing Flutter Material 3's `CarouselView` component according to Lecture Slide 16.
-- **Added:** `FloatingActionButton.extended` on `HomeScreen` `Scaffold` according to Lecture Slide 18.
-- **Updated:** `Transform` matrix skew in `ProductCard` to use `Matrix4.skewY(0.08)..rotateZ(-math.pi / 28.0)` according to Lecture Slide 6.
-- **Verified:** 0 analyzer errors and 100% test pass rate.
-
-### [Update v1.6.0] – Advanced Input Widgets & GCash/Passcode Fields
-- **Added:** `TextFormField` with `keyboardType: TextInputType.number` for GCash/Maya phone numbers (Slide 1).
-- **Added:** `TextFormField` with `keyboardType: TextInputType.visiblePassword` and `obscureText` toggle for vault security (Slide 4).
-- **Updated:** Form validation error strings to match Slide 2's recommended `Please enter some text` fallback.
-
-### [Update v1.5.0] – Currency Standardization to Philippine Pesos (₱)
-- **Updated:** All product prices converted to Philippine Pesos (`₱`) with thousands commas (`CurrencyFormatter.format`).
-- **Enforced:** Strict business rule: Every single item in the catalog has a minimum price of ₱100.
-- **Updated:** Delivery fee set to ₱150 for physical miniatures and free for digital maps.
-
-### [Update v1.4.0] – ColorFiltered LUT Split-Screen Preview Tester
-- **Added:** Dual e-commerce feature for digital creators: `LutSplitPreview` widget with split comparison slider and 4 authentic color grading lookups.
-
-### [Update v1.3.0] – Interactive Valhalla D20 Dice Roller
-- **Added:** Built-in modal bottom sheet simulator for polyhedral dice rolling with natural 20 critical triumph banners.
-
-### [Update v1.2.0] – 360° Miniature Rotation Scrubber
-- **Added:** Multi-angle inspection tool cycling across 8 high-resolution authentic photographs with auto-rotation playback.
-
-### [Update v1.1.0] – Search, Sort & Category Filtering
-- **Added:** Real-time text search bar with instant clear button and multi-criteria sorting (Price Low-to-High, High-to-Low, Top Rated, Featured).
-
-### [Update v1.0.0] – Initial Project Baseline & Architecture
-- **Added:** Base Flutter scaffolding, custom tavern color theme, and SVG logo.
+### Day 9 – Product Alignment: Upgrading to the Dual E-Commerce Type Architecture
+- **Focus:** Aligning the application with the team's official **Dual E-Commerce Type** specification:
+  1. **Digital Pattern & LUT Tester Market**
+  2. **Tabletop RPG Miniatures & Dice Swap**
+- **System Changes Applied:**
+  - Introduced the `StoreType` enum (`all`, `digitalCreator`, `tabletopRpg`) in `lib/models/product.dart`.
+  - Built the `_DualStoreSwitcher` bar on `HomeScreen` and updated the `Drawer` so users and evaluators can switch between **Dual E-Commerce (All)**, **Digital Pattern & LUT Market**, and **Tabletop RPG & Dice Swap** with one tap.
 
 ---
 
-## How to Run & Verify the Application
+### Day 10 – Store Type 1 Expansion: Digital Pattern & LUT Tester Market Catalog
+- **Focus:** Populating the micro-store for digital creators selling Lightroom presets (LUTs), sewing patterns, and 3D print `.stl` files.
+- **System Changes Applied:**
+  - Added dedicated categories in `ProductCategory`: `presets` (*Lightroom LUTs*), `sewingPatterns` (*Sewing Patterns*), and `stlFiles` (*3D Print .STL*).
+  - Added authentic non-AI catalog items with downloadable archive filenames (`downloadFileName`):
+    - `lut-01`: **Nordic Tavern Lightroom & LUT Preset Pack** (`₱350` • `nordic_tavern_luts_v2.zip`)
+    - `lut-02`: **Cinematic Portrait & Street Creator LUTs** (`₱280` • `cinematic_street_luts_pack.zip`)
+    - `pattern-01`: **Viking Ranger Cloak & Tunic Sewing Pattern (.PDF / .DXF)** (`₱320` • `ranger_cloak_sewing_pattern_a4_a0.zip`)
+    - `stl-01`: **Modular Dungeon Archway & Runes 3D Print (.STL)** (`₱250` • `modular_dungeon_archway_presupported_stl.zip`)
 
-To run the complete application in Google Chrome:
+---
+
+### Day 11 – Upgrading the `ColorFiltered` Split-Screen Slider for Buyer Phone Photos
+- **Focus:** Fulfilling the exact Dart/Flutter Edge for Store Type 1: *"For presets, use Flutter's `ColorFiltered` widget and a split-screen slider so buyers can preview the seller's filter on their own phone photos before purchasing."*
+- **System Changes Applied:**
+  - Enhanced `LutSplitPreview` (`lib/widgets/lut_split_preview.dart`) with a horizontal **Phone Photo Switcher** (`Seller Sample`, `📱 Phone: Portrait Owl`, `📱 Phone: Street Light`, `📱 Phone: Tabletop Shot`, and `+ My Phone Photo` custom URL loader).
+  - Buyers can drag the vertical split-screen divider across any phone photo to compare `BEFORE (RAW PHOTO)` vs `AFTER (LUT FILTER)` across 4 real-time `ColorFilter.matrix` presets.
+
+---
+
+### Day 12 – Store Type 2 Refinement: Tabletop RPG Miniatures & Dice Swap (3 Categories)
+- **Focus:** Fulfilling the exact Store Type 2 specification: *"Focused entirely on a single passionate community with just three categories: Minis, Dice, and Digital Maps. Dart/Flutter Edge: Add a built-in 360-degree image scrubber (swiping horizontally across a sequence of 8 photos) so buyers can inspect the paint job on a miniature."*
+- **System Changes Applied:**
+  - Configured `ProductCategory.forStore(StoreType.tabletopRpg)` to filter strictly to `[All Items, Minis, Dice, Digital Maps]`.
+  - Verified the 8-photo horizontal sequence in `ThreeSixtyViewer` (`lib/widgets/three_sixty_viewer.dart`) on both painted miniature listings (`mini-01` & `mini-02`).
+
+---
+
+### Day 13 – Pure Digital Delivery, Simple Checkout & Cart Stepper Fix
+- **Focus:** Fulfilling *"Pure digital delivery—no shipping addresses, couriers, or physical inventory tracking. Once paid, the app unlocks a download link"* and *"Demonstrate simple checkout"*.
+- **System Changes Applied:**
+  - Refactored `CartController` (`lib/controllers/cart_controller.dart`) to set `deliveryFee => 0.0` (Zero courier/shipping fees) and added `updateQuantity(CartItem item, int newQuantity)` enforcing `newQuantity >= 1`.
+  - Fixed `CartScreen` (`lib/screens/cart_screen.dart`) so the cart's `QuantityStepper` properly increments and decrements while preventing zero or negative quantities.
+  - Refactored `CheckoutScreen` (`lib/screens/checkout_screen.dart`) to remove shipping addresses and courier selectors, replacing them with an **Instant Payment & Unlock Method** (`FormField<String>` for GCash / Maya) and an **Instant Download Links Unlocked** confirmation dialog with individual **Download** buttons for every purchased item.
+
+---
+
+### Day 14 – Dev Environment Restoration & Android SDK / Gradle Configuration
+- **Focus:** Restoring the development toolchain after laptop reset and preparing the native Android build pipeline.
+- **System Changes Applied:**
+  - Installed portable **Git 2.56.0** (`C:\src\git\cmd`) and **Eclipse Temurin OpenJDK 17** (`C:\src\jdk\jdk-17.0.21+9`).
+  - Linked Flutter 3.47.8 to **Android Studio** (`C:\Android Studio`) and **Android SDK** (`C:\AndroidSDK`).
+  - Configured VS Code settings (`.vscode/settings.json`) and verified zero static analysis warnings via `analyze_files`.
+
+---
+
+### Day 15 – Building Installable Mobile `.APK` (`MarketingVikings.apk`) & Final Verification
+- **Focus:** Compiling the standalone Android `.apk` package for direct phone installation during the classroom presentation and completing all Day 1–15 documentation.
+- **System Changes Applied:**
+  - Executed `flutter test` — all automated widget and unit tests pass 100%.
+  - Built the installable Android application package and exported it directly to **`C:\App\marketing_vikings\MarketingVikings.apk`** so team members can copy it to their Android phones via USB, Google Drive, Messenger, or Telegram and install it directly.
+
+---
+
+## 4. How to Run in VS Code & Install on Your Android Phone
+
+### A. Install Directly on Your Android Phone (No Laptop Needed During Demo!)
+1. Copy **`C:\App\marketing_vikings\MarketingVikings.apk`** to your Android phone (via Google Drive, Messenger, Telegram, Email, or USB cable).
+2. Tap **`MarketingVikings.apk`** on your phone and select **Install** (if prompted by Android Play Protect for a student debug/release build, tap *More details -> Install anyway*).
+3. Open **Marketing Vikings** from your phone's home screen!
+
+### B. Run Live in VS Code (Chrome or Android Emulator)
 ```powershell
 cd C:\App\marketing_vikings
 flutter run -d chrome
 ```
-
-To run the automated test suite:
-```powershell
-cd C:\App\marketing_vikings
-flutter test
-```
-
-To run static analysis:
-```powershell
-cd C:\App\marketing_vikings
-dart analyze
-```
+Or press **`F5`** inside VS Code with `lib/main.dart` open!

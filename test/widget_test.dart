@@ -21,20 +21,23 @@ void main() {
   });
 
   testWidgets(
-    'Marketing Vikings Home Screen renders key components with Pesos (₱)',
+    'Marketing Vikings Dual E-Commerce Home Screen renders key components with Pesos (₱)',
     (tester) async {
       await tester.pumpWidget(const MarketingVikingsApp());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 150));
 
-      // Verify Title and Subtitle
-      expect(find.text('Tabletop RPG Miniatures & Dice Swap'), findsOneWidget);
+      // Verify Dual E-Commerce Headline and Store Switcher chips
+      expect(
+        find.text('Dual E-Commerce: LUT & Pattern Market + RPG Swap'),
+        findsOneWidget,
+      );
+      expect(find.text('Digital Pattern & LUT Market'), findsOneWidget);
+      expect(find.text('Tabletop RPG & Dice Swap'), findsOneWidget);
 
       // Verify Categories chip section
-      expect(find.text('Categories'), findsOneWidget);
-      expect(find.text('Painted Minis'), findsOneWidget);
-      expect(find.text('Custom Dice'), findsOneWidget);
-      expect(find.text('Digital Maps'), findsOneWidget);
+      expect(find.text('Dual Market Categories'), findsOneWidget);
+      expect(find.text('Lightroom LUTs'), findsWidgets);
 
       // Verify Placeholder design add-ons section
       expect(find.byType(Placeholder), findsWidgets);
@@ -47,6 +50,26 @@ void main() {
           reason: 'Product ${product.name} must have a minimum price of ₱100',
         );
       }
+
+      // Verify StoreType category filtering matches exact Dual E-Commerce specs
+      expect(
+        ProductCategory.forStore(StoreType.digitalCreator),
+        equals([
+          ProductCategory.all,
+          ProductCategory.presets,
+          ProductCategory.sewingPatterns,
+          ProductCategory.stlFiles,
+        ]),
+      );
+      expect(
+        ProductCategory.forStore(StoreType.tabletopRpg),
+        equals([
+          ProductCategory.all,
+          ProductCategory.minis,
+          ProductCategory.dice,
+          ProductCategory.digitalMaps,
+        ]),
+      );
     },
   );
 
