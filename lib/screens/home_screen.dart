@@ -1142,19 +1142,24 @@ class _AccountSecurityBar extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.dragonRed.withValues(alpha: 0.25),
+          color: AppColors.stone.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+          border: Border.all(color: AppColors.goldFaded),
         ),
         child: Row(
           children: [
-            const Icon(Icons.lock_outline, color: AppColors.gold, size: 18),
+            const Icon(
+              Icons.account_circle_outlined,
+              color: AppColors.gold,
+              size: 20,
+              semanticLabel: 'Account access icon',
+            ),
             const SizedBox(width: 8),
             const Expanded(
               child: Text(
-                'Signed Out (Guest Mode)',
+                'Account Access • Log In or Create Account',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: AppColors.parchment,
                 ),
@@ -1165,7 +1170,7 @@ class _AccountSecurityBar extends StatelessWidget {
               onPressed: () => onOpenAuth(initialTab: 0),
               icon: const Icon(Icons.login, size: 14, color: AppColors.gold),
               label: const Text(
-                'Sign In',
+                'Log In',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -1197,6 +1202,26 @@ class _AccountSecurityBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6),
               ),
             ),
+            TextButton.icon(
+              onPressed: () => onOpenAuth(initialTab: 2),
+              icon: const Icon(
+                Icons.mark_email_read_outlined,
+                size: 13,
+                color: AppColors.parchmentFaded,
+              ),
+              label: const Text(
+                'Reset',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.parchmentFaded,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+            ),
           ],
         ),
       );
@@ -1205,9 +1230,9 @@ class _AccountSecurityBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.stone.withValues(alpha: 0.9),
+        color: AppColors.stone.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.45)),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -1222,7 +1247,7 @@ class _AccountSecurityBar extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onOpenAuth(initialTab: 0),
               child: Text(
-                '${user.fullName} (${user.email})',
+                'Signed In: ${user.fullName} (${user.email})',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -1257,7 +1282,7 @@ class _AccountSecurityBar extends StatelessWidget {
               AuthController.instance.signOut();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Signed out! Tap Sign In or Sign Up anytime.'),
+                  content: Text('Logged out! Tap Log In or Sign Up anytime.'),
                 ),
               );
             },

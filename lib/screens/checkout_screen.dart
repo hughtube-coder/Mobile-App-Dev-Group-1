@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/auth_controller.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/vault_controller.dart';
 import '../models/cart_item.dart';
@@ -32,6 +33,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isProcessing = false;
 
   @override
+  void initState() {
+    super.initState();
+    final user = AuthController.instance.currentUser;
+    if (user != null) {
+      _nameController.text = user.fullName;
+      _emailController.text = user.email;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -41,9 +52,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _quickFillDemoBuyer() {
+    final user = AuthController.instance.currentUser;
     setState(() {
-      _nameController.text = 'Andre Viking Creator';
-      _emailController.text = 'andre.vikings@guild.ph';
+      _nameController.text = user?.fullName ?? 'Alex Rivera';
+      _emailController.text = user?.email ?? 'alex.creator@gmail.com';
       _phoneController.text = '09178842026';
       _passkeyController.text = '2026';
     });

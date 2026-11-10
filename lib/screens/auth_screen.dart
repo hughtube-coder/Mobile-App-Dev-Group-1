@@ -6,10 +6,10 @@ import '../theme/app_theme.dart';
 import '../widgets/app_bar_logo.dart';
 
 /// Strict & Secure Authentication Screen featuring:
-/// 1) Sign In / Log In (with brute-force protection & 1-tap Demo Login)
+/// 1) Log In / Sign In (with strict validation & failed-attempt protection)
 /// 2) Create New Account / Sign Up (with live 5-rule Password Strength Meter)
-/// 3) Email Password Reset (dispatches a 6-digit OTP verification email to the user's email address)
-/// 4) Sign Out / Log Out & Security Email Inbox Viewer
+/// 3) Email Password Reset (sends a 6-digit OTP verification code to the user's email)
+/// 4) Log Out / Sign Out & Security Email Inbox Viewer
 class AuthScreen extends StatefulWidget {
   final int initialTab;
 
@@ -20,20 +20,19 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  late int _selectedTab; // 0 = Sign In, 1 = Create Account, 2 = Email Reset
+  late int _selectedTab; // 0 = Log In, 1 = Create Account, 2 = Email Reset
 
   final _signInFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
   final _resetFormKey = GlobalKey<FormState>();
 
-  // Sign In controllers
-  final _signInEmailCtrl = TextEditingController(
-    text: 'andre.vikings@guild.ph',
-  );
-  final _signInPassCtrl = TextEditingController(text: 'Viking@2026');
+  // Log In controllers (clean & empty by default)
+  final _signInEmailCtrl = TextEditingController();
+  final _signInPassCtrl = TextEditingController();
   bool _obscureSignIn = true;
+  bool _rememberMe = true;
 
-  // Sign Up controllers
+  // Create Account controllers
   final _signUpNameCtrl = TextEditingController();
   final _signUpEmailCtrl = TextEditingController();
   final _signUpPassCtrl = TextEditingController();
@@ -58,8 +57,6 @@ class _AuthScreenState extends State<AuthScreen> {
     final current = AuthController.instance.currentUser;
     if (current != null) {
       _resetEmailCtrl.text = current.email;
-    } else {
-      _resetEmailCtrl.text = 'andre.vikings@guild.ph';
     }
   }
 
@@ -125,7 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
             if (email.otpCode != null) ...[
               const SizedBox(height: 4),
               Text(
-                'Verification Code: ${email.otpCode} (Tap Autofill below)',
+                'Verification Code: ${email.otpCode} (Tap Autofill)',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
@@ -254,7 +251,7 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: EdgeInsets.only(left: 8),
           child: AppBarLogo(),
         ),
-        title: const Text('Account & Security Vault 🔐'),
+        title: const Text('Account & Security 🔐'),
         actions: [
           if (Navigator.of(context).canPop())
             IconButton(
@@ -274,15 +271,15 @@ class _AuthScreenState extends State<AuthScreen> {
             padding: const EdgeInsets.all(16),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 540),
+                constraints: const BoxConstraints(maxWidth: 520),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Active Session Banner (Sign Out / Log Out or Guest Warning)
+                    // Active Session Card (shows signed-in profile + Log Out, or welcome header)
                     _buildCurrentSessionCard(user),
                     const SizedBox(height: 16),
 
-                    // Mode Switcher Tabs: Sign In | Create Account | Email Reset
+                    // Mode Switcher Tabs: Log In | Create Account | Email Reset
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
@@ -295,7 +292,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           _buildTabButton(
                             index: 0,
                             icon: Icons.login,
-                            label: 'Sign In / Log In',
+                            label: 'Log In / Sign In',
                           ),
                           _buildTabButton(
                             index: 1,
@@ -382,20 +379,25 @@ class _AuthScreenState extends State<AuthScreen> {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.dragonRed.withValues(alpha: 0.25),
+          gradient: LinearGradient(
+            colors: [
+              AppColors.stone,
+              AppColors.dragonRed.withValues(alpha: 0.25),
+            ],
+          ),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.6)),
+          border: Border.all(color: AppColors.goldFaded),
         ),
         child: const Row(
           children: [
-            Icon(Icons.lock_outline, color: AppColors.gold, size: 28),
+            Icon(Icons.account_circle_outlined, color: AppColors.gold, size: 32),
             SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'SIGNED OUT • GUEST SESSION',
+                    'WELCOME TO MARKETING VIKINGS',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
@@ -403,9 +405,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       color: AppColors.gold,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  SizedBox(height: 3),
                   Text(
-                    'Sign in to your existing account, create a new verified account, or reset your password via email OTP.',
+                    'Log in with your email, create a new account, or request a 6-digit password reset code via email.',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.parchmentFaded,
@@ -472,7 +474,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
-                        'SIGNED IN',
+                        'ACTIVE',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
@@ -498,8 +500,7 @@ class _AuthScreenState extends State<AuthScreen> {
             onPressed: () {
               AuthController.instance.signOut();
               setState(() {
-                _statusMessage =
-                    'You have safely signed out (logged out) of your account.';
+                _statusMessage = 'You have logged out of your account.';
                 _isStatusSuccess = true;
               });
             },
@@ -569,7 +570,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Widget _buildSignInForm() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.stone,
         borderRadius: BorderRadius.circular(16),
@@ -580,13 +581,13 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.shield_outlined, color: AppColors.gold),
-                const SizedBox(width: 8),
-                const Expanded(
+                Icon(Icons.login, color: AppColors.gold),
+                SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    'STRICT SIGN IN / LOG IN',
+                    'LOG IN / SIGN IN TO YOUR ACCOUNT',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
@@ -595,35 +596,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ),
                 ),
-                ActionChip(
-                  avatar: const Icon(
-                    Icons.bolt,
-                    size: 14,
-                    color: AppColors.dungeon,
-                  ),
-                  label: const Text('Demo Credentials'),
-                  backgroundColor: AppColors.gold,
-                  labelStyle: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.dungeon,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    setState(() {
-                      _signInEmailCtrl.text = 'andre.vikings@guild.ph';
-                      _signInPassCtrl.text = 'Viking@2026';
-                    });
-                  },
-                ),
               ],
             ),
             const SizedBox(height: 6),
             const Text(
-              'Enter your registered email and strict password to unlock creator tools and your digital vault:',
+              'Enter your email address and password to access your account and downloads vault:',
               style: TextStyle(fontSize: 12, color: AppColors.mutedText),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
             TextFormField(
               controller: _signInEmailCtrl,
@@ -631,12 +611,24 @@ class _AuthScreenState extends State<AuthScreen> {
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
                 label: 'Email Address',
-                hint: 'andre.vikings@guild.ph',
+                hint: 'Enter your email (e.g. name@gmail.com)',
                 icon: Icons.email_outlined,
+                suffix: _signInEmailCtrl.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear,
+                          size: 16,
+                          color: AppColors.mutedText,
+                        ),
+                        onPressed: () =>
+                            setState(() => _signInEmailCtrl.clear()),
+                      )
+                    : null,
               ),
+              onChanged: (_) => setState(() {}),
               validator: AuthController.validateEmail,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             TextFormField(
               controller: _signInPassCtrl,
@@ -645,7 +637,7 @@ class _AuthScreenState extends State<AuthScreen> {
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
                 label: 'Password',
-                hint: 'Enter your strict password',
+                hint: 'Enter your password',
                 icon: Icons.lock_outline,
                 suffix: IconButton(
                   icon: Icon(
@@ -657,35 +649,59 @@ class _AuthScreenState extends State<AuthScreen> {
                       setState(() => _obscureSignIn = !_obscureSignIn),
                 ),
               ),
-              validator: (val) =>
-                  (val == null || val.isEmpty) ? 'Password is required' : null,
+              validator: (val) => (val == null || val.isEmpty)
+                  ? 'Please enter your password'
+                  : null,
             ),
             const SizedBox(height: 8),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _resetEmailCtrl.text = _signInEmailCtrl.text.trim();
-                    _selectedTab = 2;
-                    _statusMessage = null;
-                  });
-                },
-                icon: const Icon(
-                  Icons.mark_email_read_outlined,
-                  size: 15,
-                  color: AppColors.gold,
-                ),
-                label: const Text(
-                  'Forgot Password? Email me a 6-Digit Reset Code',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.gold,
+            // Remember Me + Forgot Password Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => _rememberMe = !_rememberMe),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        activeColor: AppColors.gold,
+                        checkColor: AppColors.dungeon,
+                        visualDensity: VisualDensity.compact,
+                        onChanged: (v) =>
+                            setState(() => _rememberMe = v ?? true),
+                      ),
+                      const Text(
+                        'Keep me signed in',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.parchmentFaded,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      if (_signInEmailCtrl.text.trim().isNotEmpty) {
+                        _resetEmailCtrl.text = _signInEmailCtrl.text.trim();
+                      }
+                      _selectedTab = 2;
+                      _statusMessage = null;
+                    });
+                  },
+                  child: const Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
 
@@ -694,7 +710,7 @@ class _AuthScreenState extends State<AuthScreen> {
               child: ElevatedButton.icon(
                 onPressed: _handleSignIn,
                 icon: const Icon(Icons.login, color: AppColors.dungeon),
-                label: const Text('Sign In to Account 🔐'),
+                label: const Text('Log In / Sign In 🔐'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.dungeon,
@@ -705,6 +721,30 @@ class _AuthScreenState extends State<AuthScreen> {
                   textStyle: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Switch to Sign Up prompt
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  _selectedTab = 1;
+                  _statusMessage = null;
+                }),
+                icon: const Icon(
+                  Icons.person_add_alt_1,
+                  size: 16,
+                  color: Colors.greenAccent,
+                ),
+                label: const Text(
+                  "Don't have an account yet? Create New Account →",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.greenAccent,
                   ),
                 ),
               ),
@@ -720,7 +760,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final strength = AuthController.calculatePasswordStrength(pass);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.stone,
         borderRadius: BorderRadius.circular(16),
@@ -736,7 +776,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 Icon(Icons.person_add_alt_1, color: AppColors.gold),
                 SizedBox(width: 8),
                 Text(
-                  'CREATE NEW VERIFIED ACCOUNT',
+                  'CREATE NEW ACCOUNT (SIGN UP)',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
@@ -748,7 +788,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Strict security policy enforced: requires a valid email and a strong password (8+ chars, uppercase, lowercase, number, and symbol).',
+              'Register your email and create a strong password (minimum 8 characters with uppercase, lowercase, number, and symbol):',
               style: TextStyle(fontSize: 12, color: AppColors.mutedText),
             ),
             const SizedBox(height: 14),
@@ -757,12 +797,12 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _signUpNameCtrl,
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'Full Name / Creator Handle',
-                hint: 'e.g. Freya Lindqvist',
+                label: 'Your Name / Username',
+                hint: 'Enter your name',
                 icon: Icons.badge_outlined,
               ),
               validator: (v) => (v == null || v.trim().length < 2)
-                  ? 'Please enter your full name'
+                  ? 'Please enter your name (at least 2 characters)'
                   : null,
             ),
             const SizedBox(height: 12),
@@ -772,7 +812,7 @@ class _AuthScreenState extends State<AuthScreen> {
               keyboardType: TextInputType.emailAddress,
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'Email Address (For Verification & Reset)',
+                label: 'Email Address',
                 hint: 'yourname@gmail.com',
                 icon: Icons.email_outlined,
               ),
@@ -780,7 +820,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Role Selector using FormField<String> (Lecture Slide 20)
+            // Account Type Selector using FormField<String> (Lecture Slide 20)
             FormField<String>(
               initialValue: _selectedRole,
               builder: (state) {
@@ -788,7 +828,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Select Account Role:',
+                      'Account Type:',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -801,7 +841,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       runSpacing: 6,
                       children: [
                         'Digital Creator & Seller',
-                        'Tabletop Adventurer & Buyer',
+                        'Tabletop RPG Buyer & Player',
                       ].map((role) {
                         final selected = _selectedRole == role;
                         return ChoiceChip(
@@ -836,7 +876,7 @@ class _AuthScreenState extends State<AuthScreen> {
               onChanged: (_) => setState(() {}),
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'Strict Password',
+                label: 'Password',
                 hint: 'Min 8 chars, A-Z, a-z, 0-9 & symbol (@#!)',
                 icon: Icons.security,
                 suffix: IconButton(
@@ -884,7 +924,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   Icons.verified_user,
                   color: AppColors.dungeon,
                 ),
-                label: const Text('Create Verified Account & Sign In ✅'),
+                label: const Text('Create Account & Sign In ✅'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.dungeon,
@@ -910,7 +950,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final strength = AuthController.calculatePasswordStrength(newPass);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.stone,
         borderRadius: BorderRadius.circular(16),
@@ -927,7 +967,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'EMAIL PASSWORD RESET & OTP VERIFICATION',
+                    'RESET PASSWORD VIA EMAIL CODE (OTP)',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
@@ -940,7 +980,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Enter your email address below. Our system will email a 6-digit OTP verification code to your email so you can securely reset your password:',
+              'Step 1: Enter your email and tap "Send Code". We will send a 6-digit verification code to your email address so you can set a new password:',
               style: TextStyle(fontSize: 12, color: AppColors.mutedText),
             ),
             const SizedBox(height: 14),
@@ -954,8 +994,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     keyboardType: TextInputType.emailAddress,
                     style: const TextStyle(color: AppColors.parchment),
                     decoration: _inputDecoration(
-                      label: 'Account Email Address',
-                      hint: 'Enter your email address',
+                      label: 'Your Email Address',
+                      hint: 'Enter your email (e.g. name@gmail.com)',
                       icon: Icons.email_outlined,
                     ),
                     validator: AuthController.validateEmail,
@@ -963,7 +1003,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
-                  height: 54,
+                  height: 50,
                   child: ElevatedButton.icon(
                     onPressed: _handleSendResetEmail,
                     icon: const Icon(
@@ -971,7 +1011,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       size: 15,
                       color: AppColors.dungeon,
                     ),
-                    label: const Text('Email Code'),
+                    label: const Text('Send Code'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.gold,
                       foregroundColor: AppColors.dungeon,
@@ -1011,7 +1051,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'EMAIL DELIVERED TO: ${_latestResetEmail!.toEmail}',
+                            'EMAIL SENT TO: ${_latestResetEmail!.toEmail}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
@@ -1083,8 +1123,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 letterSpacing: 3,
               ),
               decoration: _inputDecoration(
-                label: '6-Digit Email Verification Code (OTP)',
-                hint: 'e.g. 482910',
+                label: '6-Digit Email Verification Code',
+                hint: 'Enter 6-digit code from email',
                 icon: Icons.pin_outlined,
               ),
               validator: (val) {
@@ -1104,7 +1144,7 @@ class _AuthScreenState extends State<AuthScreen> {
               onChanged: (_) => setState(() {}),
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'New Strict Password',
+                label: 'New Password',
                 hint: 'Min 8 chars, uppercase, lowercase, number & symbol',
                 icon: Icons.lock_reset,
                 suffix: IconButton(
@@ -1128,7 +1168,7 @@ class _AuthScreenState extends State<AuthScreen> {
               child: ElevatedButton.icon(
                 onPressed: _handleResetPasswordSubmit,
                 icon: const Icon(Icons.key, color: AppColors.dungeon),
-                label: const Text('Verify Email Code & Reset Password 🔑'),
+                label: const Text('Verify Code & Update Password 🔑'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.dungeon,
@@ -1162,7 +1202,7 @@ class _AuthScreenState extends State<AuthScreen> {
     String label = 'Weak';
     if (strength >= 1.0) {
       barColor = Colors.greenAccent;
-      label = 'Strict & Secure (100%)';
+      label = 'Strong & Secure (100%)';
     } else if (strength >= 0.6) {
       barColor = AppColors.gold;
       label = 'Medium (${(strength * 100).round()}%)';
@@ -1258,10 +1298,14 @@ class _AuthScreenState extends State<AuthScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.forward_to_inbox, color: AppColors.gold, size: 18),
+              const Icon(
+                Icons.forward_to_inbox,
+                color: AppColors.gold,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Text(
-                'SECURITY EMAIL NOTIFICATION LOG (${emails.length})',
+                'EMAIL NOTIFICATION INBOX (${emails.length})',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
@@ -1274,7 +1318,7 @@ class _AuthScreenState extends State<AuthScreen> {
           const SizedBox(height: 6),
           if (emails.isEmpty)
             const Text(
-              'No security emails dispatched in this session yet. Sign in, register an account, or request a password reset to view live email dispatches.',
+              'Emails sent for account verification, sign-in alerts, or 6-digit password reset codes will appear here.',
               style: TextStyle(fontSize: 11, color: AppColors.mutedText),
             )
           else
@@ -1306,7 +1350,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         if (e.otpCode != null)
                           Text(
-                            'OTP: ${e.otpCode}',
+                            'Code: ${e.otpCode}',
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -1350,7 +1394,10 @@ class _AuthScreenState extends State<AuthScreen> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      labelStyle: const TextStyle(color: AppColors.parchmentFaded, fontSize: 12),
+      labelStyle: const TextStyle(
+        color: AppColors.parchmentFaded,
+        fontSize: 12,
+      ),
       hintStyle: const TextStyle(color: AppColors.mutedText, fontSize: 12),
       prefixIcon: Icon(icon, color: AppColors.gold, size: 18),
       suffixIcon: suffix,
