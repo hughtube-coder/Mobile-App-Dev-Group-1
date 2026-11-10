@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Interactive 360-degree miniature paint job inspection scrubber.
-/// Allows buyers to swipe horizontally across 8 authentic photographs
-/// to inspect every angle of the hand-painted miniature.
+/// Dart/Flutter Edge Feature (Tabletop RPG Miniatures & Dice Swap):
+/// Built-in 360-degree miniature paint job inspection scrubber.
+/// Allows buyers to swipe horizontally across a sequence of 8 authentic photographs,
+/// view angle-by-angle paint layer notes, or toggle 3x Magnifying Loupe Zoom!
 class ThreeSixtyViewer extends StatefulWidget {
   final List<String> images;
   final double height;
@@ -13,7 +14,7 @@ class ThreeSixtyViewer extends StatefulWidget {
   const ThreeSixtyViewer({
     super.key,
     required this.images,
-    this.height = 360,
+    this.height = 415,
     required this.heroTag,
   });
 
@@ -26,9 +27,21 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
   int _currentIndex = 0;
   double _accumulatedDelta = 0.0;
   bool _isAutoRotating = false;
+  bool _isLoupeZoomMode = false;
   late final AnimationController _autoRotateController;
 
-  static const double _sensitivity = 28.0; // Pixels per frame shift
+  static const double _sensitivity = 26.0; // Pixels per frame shift
+
+  static const List<String> _angleLabels = [
+    '0° Front Stance • NMM Gold & Face Glaze',
+    '45° Right Quarter • Weapon Edge Highlight',
+    '90° Right Profile • Shield Weathering',
+    '135° Rear-Right • Cloak Wet-Blending',
+    '180° Back View • Nuln Oil Recess Wash',
+    '225° Rear-Left • Leather & Fur Drybrush',
+    '270° Left Profile • OSL Rune Glow',
+    '315° Heroic Angle • Scenic Slate Base',
+  ];
 
   @override
   void initState() {
@@ -64,6 +77,7 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (_isLoupeZoomMode) return;
     if (_isAutoRotating) {
       setState(() {
         _isAutoRotating = false;
@@ -86,6 +100,7 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
 
   void _toggleAutoRotate() {
     setState(() {
+      _isLoupeZoomMode = false;
       _isAutoRotating = !_isAutoRotating;
       if (_isAutoRotating) {
         _autoRotateController.forward(from: 0.0);
@@ -105,11 +120,11 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
     }
 
     final total = widget.images.length;
+    final angleNote = _angleLabels[_currentIndex % _angleLabels.length];
 
     return Container(
-      height: widget.height,
       decoration: BoxDecoration(
-        color: AppColors.stone.withValues(alpha: 0.85),
+        color: AppColors.stone.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.goldFaded, width: 1.5),
         boxShadow: const [
@@ -121,165 +136,321 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // The interactive photo scrubber layer
-          GestureDetector(
-            onHorizontalDragUpdate: _onHorizontalDragUpdate,
-            child: Container(
-              color: Colors.transparent,
-              width: double.infinity,
-              height: double.infinity,
-              child: Image.network(
-                widget.images[_currentIndex],
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppColors.gold),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(
-                    Icons.broken_image,
-                    color: AppColors.mutedText,
-                    size: 48,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Top Left: Rotated 360° Inspection Badge (using Transform & Align)
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Transform.rotate(
-                angle: -0.06, // Slight dynamic Viking battle badge tilt
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.dragonRed, Color(0xFF5C1010)],
+          // Main 360° Interactive Canvas
+          SizedBox(
+            height: 310,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Interactive Photo Scrubber or Pinch-to-Zoom Loupe Layer
+                if (_isLoupeZoomMode)
+                  InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 3.5,
+                    child: Container(
+                      color: Colors.transparent,
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Image.network(
+                        widget.images[_currentIndex],
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: AppColors.mutedText,
+                                size: 48,
+                              ),
+                            ),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.gold, width: 1),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black45,
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
+                  )
+                else
+                  GestureDetector(
+                    onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                    child: Container(
+                      color: Colors.transparent,
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Image.network(
+                        widget.images[_currentIndex],
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.gold,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: AppColors.mutedText,
+                                size: 48,
+                              ),
+                            ),
                       ),
-                    ],
+                    ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.threed_rotation,
-                        color: AppColors.gold,
-                        size: 16,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        '360° INSPECT',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                          color: AppColors.parchment,
+
+                // Top Left: Rotated 360° Inspection Badge (using Transform & Align)
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Transform.rotate(
+                      angle: -0.06,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Top Right: Auto-rotate button
-          Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Material(
-                color: Colors.black54,
-                shape: const CircleBorder(),
-                child: IconButton(
-                  icon: Icon(
-                    _isAutoRotating
-                        ? Icons.pause_circle_filled
-                        : Icons.play_circle_outline,
-                    color: AppColors.gold,
-                  ),
-                  tooltip: _isAutoRotating
-                      ? 'Pause Rotation'
-                      : 'Auto 360° Spin',
-                  onPressed: _toggleAutoRotate,
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom Bar: Frame Indicator, Angle info, and Horizontal drag hint
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.75),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.goldFaded),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.swipe, color: AppColors.gold, size: 16),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'Swipe to rotate',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.parchmentFaded,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Frame indicator dots
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(total, (i) {
-                      final isActive = i == _currentIndex;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                        width: isActive ? 14 : 6,
-                        height: 6,
                         decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.gold
-                              : AppColors.mutedText,
-                          borderRadius: BorderRadius.circular(3),
+                          gradient: const LinearGradient(
+                            colors: [AppColors.dragonRed, Color(0xFF5C1010)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.gold, width: 1),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black45,
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${_currentIndex + 1}/$total',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.gold,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.threed_rotation,
+                              color: AppColors.gold,
+                              size: 16,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '360° 8-PHOTO SCRUBBER',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.1,
+                                color: AppColors.parchment,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Top Right: Loupe Zoom Toggle + Auto-Rotate Button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Material(
+                          color: _isLoupeZoomMode
+                              ? AppColors.gold
+                              : Colors.black54,
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.zoom_in,
+                              color: _isLoupeZoomMode
+                                  ? AppColors.dungeon
+                                  : AppColors.gold,
+                              size: 20,
+                            ),
+                            tooltip: 'Toggle 3x Paint Loupe Zoom',
+                            onPressed: () {
+                              setState(() {
+                                _isLoupeZoomMode = !_isLoupeZoomMode;
+                                if (_isLoupeZoomMode && _isAutoRotating) {
+                                  _isAutoRotating = false;
+                                  _autoRotateController.stop();
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Material(
+                          color: Colors.black54,
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            icon: Icon(
+                              _isAutoRotating
+                                  ? Icons.pause_circle_filled
+                                  : Icons.play_circle_outline,
+                              color: AppColors.gold,
+                              size: 22,
+                            ),
+                            tooltip: _isAutoRotating
+                                ? 'Pause Rotation'
+                                : 'Auto 360° Spin',
+                            onPressed: _toggleAutoRotate,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Bottom Overlay: Frame Indicator & Angle Dots
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.78),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.goldFaded),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isLoupeZoomMode ? Icons.pinch : Icons.swipe,
+                          color: AppColors.gold,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isLoupeZoomMode
+                              ? 'Pinch to zoom paint job'
+                              : 'Swipe horizontally',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.parchmentFaded,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(total, (i) {
+                            final isActive = i == _currentIndex;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 2.5,
+                              ),
+                              width: isActive ? 14 : 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.gold
+                                    : AppColors.mutedText,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${_currentIndex + 1}/$total',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Paint Recipe & Angle Scrubber Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.dungeon.withValues(alpha: 0.85),
+              border: const Border(top: BorderSide(color: Colors.white12)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.brush, size: 14, color: AppColors.gold),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'PAINT INSPECTOR: $angleNote',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Text(
+                      'Angle 1',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.mutedText,
+                      ),
+                    ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 12,
+                          ),
+                        ),
+                        child: Slider(
+                          value: _currentIndex.toDouble(),
+                          min: 0,
+                          max: (total - 1).toDouble(),
+                          divisions: total > 1 ? total - 1 : 1,
+                          activeColor: AppColors.gold,
+                          inactiveColor: Colors.white12,
+                          onChanged: (val) {
+                            if (_isAutoRotating) {
+                              _autoRotateController.stop();
+                              _isAutoRotating = false;
+                            }
+                            setState(() => _currentIndex = val.round());
+                          },
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Angle $total',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

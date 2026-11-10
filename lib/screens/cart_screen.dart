@@ -8,7 +8,7 @@ import '../widgets/quantity_stepper.dart';
 import 'checkout_screen.dart';
 
 /// Full interactive Cart screen showcasing ListView, quantity delimiter,
-/// Remove item ❗ with confirmation, delivery fee calculations, and checkout trigger.
+/// Remove item ❗ with confirmation, promo voucher system, and checkout trigger.
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -118,7 +118,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'No painted miniatures, custom dice, or battle maps added yet.',
+                      'No LUT presets, sewing patterns, .STL files, miniatures, or dice added yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.mutedText,
@@ -241,11 +241,14 @@ class CartScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      '${item.selectedColor.name} • ${item.selectedSize}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.mutedText,
+                                    Expanded(
+                                      child: Text(
+                                        '${item.selectedColor.name} • ${item.selectedSize}',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.mutedText,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -283,15 +286,15 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
 
-              // Bottom Order Summary Container
+              // Bottom Order Summary Container with Promo Voucher Chips
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
                   color: AppColors.stone,
-                  border: const Border(
+                  border: Border(
                     top: BorderSide(color: AppColors.goldFaded),
                   ),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       color: Colors.black54,
                       blurRadius: 16,
@@ -303,6 +306,47 @@ class CartScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Interactive Creator / Guild Promo Vouchers
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.local_offer_outlined,
+                            size: 15,
+                            color: AppColors.gold,
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Vouchers:',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.parchment,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _promoChip(
+                                    cart: cart,
+                                    code: 'VIKING10',
+                                    label: 'VIKING10 (-10%)',
+                                  ),
+                                  const SizedBox(width: 6),
+                                  _promoChip(
+                                    cart: cart,
+                                    code: 'CREATOR50',
+                                    label: 'CREATOR50 (-₱50)',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -319,6 +363,28 @@ class CartScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      if (cart.discountAmount > 0) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Promo (${cart.appliedPromoCode})',
+                              style: const TextStyle(
+                                color: Colors.greenAccent,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              '-${CurrencyFormatter.format(cart.discountAmount)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.greenAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -371,7 +437,7 @@ class CartScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
                       // Proceed to Checkout Button (Icon: 💰)
                       SizedBox(
@@ -411,6 +477,33 @@ class CartScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _promoChip({
+    required CartController cart,
+    required String code,
+    required String label,
+  }) {
+    final isApplied = cart.appliedPromoCode == code;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isApplied,
+      onSelected: (selected) {
+        if (selected) {
+          cart.applyPromoCode(code);
+        } else {
+          cart.clearPromoCode();
+        }
+      },
+      selectedColor: AppColors.gold,
+      backgroundColor: AppColors.dungeon,
+      labelStyle: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        color: isApplied ? AppColors.dungeon : AppColors.gold,
+      ),
+      visualDensity: VisualDensity.compact,
     );
   }
 }

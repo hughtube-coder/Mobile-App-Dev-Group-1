@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/vault_controller.dart';
 import '../models/cart_item.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'vault_screen.dart';
 
 /// Simple Checkout Screen demonstrating Form, FormField, TextFormField, and `GlobalKey<FormState>`.
 /// Implements Pure Digital Delivery (no shipping addresses, couriers, or physical inventory tracking).
-/// Once paid, the app immediately unlocks downloadable links for every purchased item.
+/// Once paid, the app immediately unlocks downloadable links for every purchased item and saves them to the Downloads Vault.
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -38,6 +40,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
+  void _quickFillDemoBuyer() {
+    setState(() {
+      _nameController.text = 'Andre Viking Creator';
+      _emailController.text = 'andre.vikings@guild.ph';
+      _phoneController.text = '09178842026';
+      _passkeyController.text = '2026';
+    });
+  }
+
   void _submitOrder() async {
     // Validate all form fields using GlobalKey<FormState>
     if (!_formKey.currentState!.validate()) {
@@ -54,7 +65,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     setState(() => _isProcessing = true);
     await Future.delayed(
-      const Duration(milliseconds: 900),
+      const Duration(milliseconds: 800),
     ); // Simulate payment verification
 
     if (!mounted) return;
@@ -63,6 +74,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = CartController.instance;
     final purchasedItems = List<CartItem>.from(cart.items);
     final totalAmount = cart.grandTotal;
+    final buyerName = _nameController.text.trim();
+    final buyerEmail = _emailController.text.trim();
+
+    // Permanently unlock all purchased files into the Downloads Vault
+    VaultController.instance.unlockOrder(
+      items: purchasedItems,
+      buyerName: buyerName,
+      buyerEmail: buyerEmail,
+      paymentChannel: _paymentChannel,
+    );
 
     // Show Order Confirmation Dialog with Unlocked Download Links for every item!
     showDialog(
@@ -107,7 +128,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Thank you, ${_nameController.text.trim()}!',
+                'Thank you, $buyerName!',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
@@ -118,7 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               Text(
                 'Your payment of ${CurrencyFormatter.format(totalAmount)} is complete. '
                 'Pure digital delivery—no shipping addresses or couriers required. '
-                'A backup link was also sent to ${_emailController.text.trim()}.',
+                'Your files are unlocked below and saved to your Downloads Vault ($buyerEmail).',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.parchmentFaded,
@@ -247,6 +268,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
         actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              cart.clear();
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const VaultScreen()),
+              );
+            },
+            icon: const Icon(Icons.lock_open, size: 16),
+            label: const Text('Open Vault 🔓'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.greenAccent,
+              side: const BorderSide(color: Colors.greenAccent),
+            ),
+          ),
           ElevatedButton(
             onPressed: () {
               cart.clear();
@@ -257,7 +293,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               backgroundColor: AppColors.gold,
               foregroundColor: AppColors.dungeon,
             ),
-            child: const Text('Return to Marketplace'),
+            child: const Text('Return to Shop'),
           ),
         ],
       ),
@@ -345,18 +381,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
 
-              const Text(
-                'BUYER & DOWNLOAD ACCOUNT DETAILS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.4,
-                  color: AppColors.gold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'BUYER & DOWNLOAD ACCOUNT DETAILS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.3,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _quickFillDemoBuyer,
+                    icon: const Icon(
+                      Icons.flash_on,
+                      size: 14,
+                      color: AppColors.gold,
+                    ),
+                    label: const Text(
+                      'Quick Fill Demo',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.gold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Input widget: TextFormField for Full Name
               TextFormField(

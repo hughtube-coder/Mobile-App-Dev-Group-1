@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/vault_controller.dart';
+import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_tavern_background.dart';
 import '../widgets/app_bar_logo.dart';
 import '../widgets/category_chip_bar.dart';
+import '../widgets/creator_listing_modal.dart';
 import '../widgets/design_addons_placeholder.dart';
 import '../widgets/dice_roller_sheet.dart';
 import '../widgets/hero_carousel.dart';
@@ -15,6 +18,7 @@ import '../widgets/section_title.dart';
 import 'cart_screen.dart';
 import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
+import 'vault_screen.dart';
 
 enum ProductSortOption {
   featured('Featured'),
@@ -44,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ProductCategory _selectedCategory = ProductCategory.all;
   String _searchQuery = '';
   ProductSortOption _sortOption = ProductSortOption.featured;
+  bool _showFavoritesOnly = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -63,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Product> get _filteredProducts {
-    List<Product> list = Product.catalog;
+    List<Product> list = VaultController.instance.fullCatalog;
 
     // Filter by Dual E-Commerce Store Type
     if (_selectedStore != StoreType.all) {
@@ -73,6 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // Filter by Category
     if (_selectedCategory != ProductCategory.all) {
       list = list.where((p) => p.category == _selectedCategory).toList();
+    }
+
+    // Filter by Favorites
+    if (_showFavoritesOnly) {
+      list = list
+          .where((p) => WishlistController.instance.isFavorite(p.id))
+          .toList();
     }
 
     // Filter by Search
@@ -132,9 +144,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openCreatorListingModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const CreatorListingModal(),
+    );
+  }
+
+  void _openQuickLutStudio() {
+    final lutProduct = Product.catalog.firstWhere(
+      (p) => p.hasLutPreview,
+      orElse: () => Product.catalog.first,
+    );
+    _navigateToDetail(lutProduct);
+  }
+
+  void _openQuick360Inspector() {
+    final miniProduct = Product.catalog.firstWhere(
+      (p) => p.has360View,
+      orElse: () => Product.catalog.first,
+    );
+    _navigateToDetail(miniProduct);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _filteredProducts;
     final storeCategories = ProductCategory.forStore(_selectedStore);
 
     return Scaffold(
@@ -150,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _selectedStore = StoreType.all;
                   _selectedCategory = ProductCategory.all;
+                  _showFavoritesOnly = false;
                   _searchQuery = '';
                   _searchController.clear();
                 });
@@ -159,10 +196,72 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: const SizedBox.shrink(),
         actions: [
+          // Sell / Swap Creator Listing Studio Button
+          IconButton(
+            icon: const Icon(
+              Icons.add_business_outlined,
+              color: AppColors.gold,
+              semanticLabel: 'Sell or swap item in marketplace',
+            ),
+            tooltip: 'Sell / Swap Item +',
+            onPressed: _openCreatorListingModal,
+          ),
+
+          // Unlocked Downloads Vault Action with Badge
+          AnimatedBuilder(
+            animation: VaultController.instance,
+            builder: (context, _) {
+              final unlocked = VaultController.instance.unlockedCount;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.cloud_download_outlined,
+                      color: AppColors.gold,
+                      semanticLabel: 'Open unlocked downloads vault',
+                    ),
+                    tooltip: 'Unlocked Downloads Vault 🔓',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const VaultScreen()),
+                      );
+                    },
+                  ),
+                  if (unlocked > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$unlocked',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+
           // D20 Quick Dice Roller Action
           IconButton(
             icon: const Icon(Icons.casino, color: AppColors.gold),
-            tooltip: 'Roll D20 🎲',
+            tooltip: 'Roll Polyhedral Dice 🎲',
             onPressed: _openDiceRoller,
           ),
 
@@ -422,6 +521,40 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(color: Colors.white12),
             ListTile(
+              leading: const Icon(
+                Icons.cloud_download,
+                color: Colors.greenAccent,
+              ),
+              title: const Text(
+                'Unlocked Downloads Vault 🔓',
+                style: TextStyle(
+                  color: Colors.greenAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: const Text(
+                'Access purchased .DNG, .PDF, .STL & .ZIP links',
+                style: TextStyle(fontSize: 11, color: AppColors.mutedText),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const VaultScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_business, color: AppColors.gold),
+              title: const Text(
+                'Sell / Swap Creator Item +',
+                style: TextStyle(color: AppColors.parchment),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openCreatorListingModal();
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.casino_outlined, color: AppColors.gold),
               title: const Text(
                 'Valhalla D20 Dice Roller 🎲',
@@ -472,235 +605,350 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Dynamic animated tavern background containing scrollable shop
       body: AnimatedTavernBackground(
-        child: SingleChildScrollView(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 840),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Welcome Banner with Dual E-Commerce Type Header
-                    _WelcomeBanner(selectedStore: _selectedStore),
-                    const SizedBox(height: 14),
+        child: AnimatedBuilder(
+          animation: Listenable.merge([
+            VaultController.instance,
+            WishlistController.instance,
+          ]),
+          builder: (context, _) {
+            final filtered = _filteredProducts;
 
-                    // DUAL E-COMMERCE MODE SWITCHER
-                    _DualStoreSwitcher(
-                      selectedStore: _selectedStore,
-                      onSelectStore: _selectStore,
+            return SingleChildScrollView(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 840),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
                     ),
-                    const SizedBox(height: 16),
-
-                    // LIVE SEARCH & SORT BAR
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.stone.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.goldFaded),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.search,
-                            color: AppColors.gold,
-                            size: 22,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(
-                                color: AppColors.parchment,
-                              ),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    'Search LUTs, patterns, .stl, minis, dice, maps...',
-                                hintStyle: TextStyle(
-                                  color: AppColors.mutedText,
-                                  fontSize: 13,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                              ),
-                              onChanged: (val) {
-                                setState(() => _searchQuery = val);
-                              },
-                            ),
-                          ),
-                          if (_searchQuery.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.clear,
-                                size: 18,
-                                color: AppColors.mutedText,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            ),
-                          PopupMenuButton<ProductSortOption>(
-                            icon: const Icon(Icons.sort, color: AppColors.gold),
-                            tooltip: 'Sort items',
-                            color: AppColors.stone,
-                            onSelected: (option) =>
-                                setState(() => _sortOption = option),
-                            itemBuilder: (context) =>
-                                ProductSortOption.values.map((opt) {
-                                  return PopupMenuItem(
-                                    value: opt,
-                                    child: Text(
-                                      opt.label,
-                                      style: TextStyle(
-                                        color: opt == _sortOption
-                                            ? AppColors.gold
-                                            : AppColors.parchment,
-                                        fontWeight: opt == _sortOption
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Featured Spotlight Carousel
-                    const SectionTitle(
-                      'Guild Spotlight: 360° Scrubber & LUT Tester',
-                      subtitle:
-                          'Tap any item to test the 360° 8-photo scrubber or ColorFiltered LUT split-screen slider',
-                    ),
-                    HeroCarousel(onProductTap: _navigateToDetail),
-                    const SizedBox(height: 24),
-
-                    // Material 3 CarouselView (Lecture Slide 16)
-                    const SectionTitle(
-                      'Material 3 CarouselView • Featured Artifacts',
-                      subtitle:
-                          'Interactive card carousel built with Flutter Material 3 CarouselView',
-                    ),
-                    MaterialCarouselViewSection(
-                      onProductTap: _navigateToDetail,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Category Filter Chips (adapts to selected StoreType!)
-                    SectionTitle(
-                      _selectedStore == StoreType.tabletopRpg
-                          ? 'Tabletop RPG Categories (Minis, Dice, Digital Maps)'
-                          : _selectedStore == StoreType.digitalCreator
-                          ? 'Digital Creator Categories (LUTs, Patterns, .STL)'
-                          : 'Dual Market Categories',
-                      subtitle: _selectedStore.subtitle,
-                    ),
-                    CategoryChipBar(
-                      categories: storeCategories,
-                      selectedCategory: _selectedCategory,
-                      onSelect: (cat) =>
-                          setState(() => _selectedCategory = cat),
-                    ),
-                    const SizedBox(height: 22),
-
-                    // Product Catalog Section Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: SectionTitle(
-                            _selectedCategory.label,
-                            subtitle:
-                                '${filtered.length} Items • Minimum ₱100 • ${_sortOption.label}',
+                        // Welcome Banner with Dual E-Commerce Type Header
+                        _WelcomeBanner(selectedStore: _selectedStore),
+                        const SizedBox(height: 14),
+
+                        // DUAL E-COMMERCE MODE SWITCHER
+                        _DualStoreSwitcher(
+                          selectedStore: _selectedStore,
+                          onSelectStore: _selectStore,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // QUICK INTERACTIVE STUDIO LAB LAUNCHER BAR
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.tune,
+                                  size: 15,
+                                  color: AppColors.gold,
+                                ),
+                                label: const Text(
+                                  'Test LUT Split-Slider',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.parchment,
+                                  ),
+                                ),
+                                backgroundColor: AppColors.stone,
+                                side: const BorderSide(
+                                  color: AppColors.goldFaded,
+                                ),
+                                onPressed: _openQuickLutStudio,
+                              ),
+                              const SizedBox(width: 8),
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.threed_rotation,
+                                  size: 15,
+                                  color: AppColors.gold,
+                                ),
+                                label: const Text(
+                                  'Test 360° Mini Scrubber',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.parchment,
+                                  ),
+                                ),
+                                backgroundColor: AppColors.stone,
+                                side: const BorderSide(
+                                  color: AppColors.goldFaded,
+                                ),
+                                onPressed: _openQuick360Inspector,
+                              ),
+                              const SizedBox(width: 8),
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.add_business,
+                                  size: 15,
+                                  color: AppColors.gold,
+                                ),
+                                label: const Text(
+                                  '+ Sell / Swap Item',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.parchment,
+                                  ),
+                                ),
+                                backgroundColor: AppColors.stone,
+                                side: const BorderSide(
+                                  color: AppColors.goldFaded,
+                                ),
+                                onPressed: _openCreatorListingModal,
+                              ),
+                              const SizedBox(width: 8),
+                              FilterChip(
+                                avatar: Icon(
+                                  Icons.favorite,
+                                  size: 14,
+                                  color: _showFavoritesOnly
+                                      ? AppColors.dungeon
+                                      : Colors.redAccent,
+                                ),
+                                label: Text(
+                                  'Saved (${WishlistController.instance.count})',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: _showFavoritesOnly
+                                        ? AppColors.dungeon
+                                        : AppColors.parchment,
+                                  ),
+                                ),
+                                selected: _showFavoritesOnly,
+                                selectedColor: AppColors.gold,
+                                backgroundColor: AppColors.stone,
+                                side: const BorderSide(
+                                  color: AppColors.goldFaded,
+                                ),
+                                onSelected: (val) =>
+                                    setState(() => _showFavoritesOnly = val),
+                              ),
+                            ],
                           ),
                         ),
-                        if (_selectedStore != StoreType.all ||
-                            _selectedCategory != ProductCategory.all ||
-                            _searchQuery.isNotEmpty)
-                          TextButton(
-                            onPressed: () => setState(() {
-                              _selectedStore = StoreType.all;
-                              _selectedCategory = ProductCategory.all;
-                              _searchQuery = '';
-                              _searchController.clear();
-                            }),
-                            child: const Text(
-                              'Reset',
-                              style: TextStyle(color: AppColors.gold),
-                            ),
-                          ),
-                      ],
-                    ),
+                        const SizedBox(height: 14),
 
-                    // Responsive GridView of Product Cards
-                    if (filtered.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(32),
-                        alignment: Alignment.center,
-                        child: const Column(
+                        // LIVE SEARCH & SORT BAR
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.stone.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.goldFaded),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.search,
+                                color: AppColors.gold,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  style: const TextStyle(
+                                    color: AppColors.parchment,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'Search LUTs, patterns, .stl, minis, dice, maps...',
+                                    hintStyle: TextStyle(
+                                      color: AppColors.mutedText,
+                                      fontSize: 13,
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() => _searchQuery = val);
+                                  },
+                                ),
+                              ),
+                              if (_searchQuery.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    size: 18,
+                                    color: AppColors.mutedText,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                ),
+                              PopupMenuButton<ProductSortOption>(
+                                icon: const Icon(
+                                  Icons.sort,
+                                  color: AppColors.gold,
+                                ),
+                                tooltip: 'Sort items',
+                                color: AppColors.stone,
+                                onSelected: (option) =>
+                                    setState(() => _sortOption = option),
+                                itemBuilder: (context) =>
+                                    ProductSortOption.values.map((opt) {
+                                      return PopupMenuItem(
+                                        value: opt,
+                                        child: Text(
+                                          opt.label,
+                                          style: TextStyle(
+                                            color: opt == _sortOption
+                                                ? AppColors.gold
+                                                : AppColors.parchment,
+                                            fontWeight: opt == _sortOption
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Featured Spotlight Carousel
+                        const SectionTitle(
+                          'Guild Spotlight: 360° Scrubber & LUT Tester',
+                          subtitle:
+                              'Tap any item to test the 360° 8-photo scrubber or ColorFiltered LUT split-screen slider',
+                        ),
+                        HeroCarousel(onProductTap: _navigateToDetail),
+                        const SizedBox(height: 24),
+
+                        // Material 3 CarouselView (Lecture Slide 16)
+                        const SectionTitle(
+                          'Material 3 CarouselView • Featured Artifacts',
+                          subtitle:
+                              'Interactive card carousel built with Flutter Material 3 CarouselView',
+                        ),
+                        MaterialCarouselViewSection(
+                          onProductTap: _navigateToDetail,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Category Filter Chips (adapts to selected StoreType!)
+                        SectionTitle(
+                          _selectedStore == StoreType.tabletopRpg
+                              ? 'Tabletop RPG Categories (Minis, Dice, Digital Maps)'
+                              : _selectedStore == StoreType.digitalCreator
+                              ? 'Digital Creator Categories (LUTs, Patterns, .STL)'
+                              : 'Dual Market Categories',
+                          subtitle: _selectedStore.subtitle,
+                        ),
+                        CategoryChipBar(
+                          categories: storeCategories,
+                          selectedCategory: _selectedCategory,
+                          onSelect: (cat) =>
+                              setState(() => _selectedCategory = cat),
+                        ),
+                        const SizedBox(height: 22),
+
+                        // Product Catalog Section Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 48,
-                              color: AppColors.mutedText,
+                            Expanded(
+                              child: SectionTitle(
+                                _selectedCategory.label,
+                                subtitle:
+                                    '${filtered.length} Items • Minimum ₱100 • ${_sortOption.label}',
+                              ),
                             ),
-                            SizedBox(height: 12),
-                            Text(
-                              'No matching treasures found in this realm.',
-                              style: TextStyle(color: AppColors.parchment),
-                            ),
+                            if (_selectedStore != StoreType.all ||
+                                _selectedCategory != ProductCategory.all ||
+                                _showFavoritesOnly ||
+                                _searchQuery.isNotEmpty)
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _selectedStore = StoreType.all;
+                                  _selectedCategory = ProductCategory.all;
+                                  _showFavoritesOnly = false;
+                                  _searchQuery = '';
+                                  _searchController.clear();
+                                }),
+                                child: const Text(
+                                  'Reset',
+                                  style: TextStyle(color: AppColors.gold),
+                                ),
+                              ),
                           ],
                         ),
-                      )
-                    else
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
-                              childAspectRatio: 0.58,
+
+                        // Responsive GridView of Product Cards
+                        if (filtered.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(32),
+                            alignment: Alignment.center,
+                            child: const Column(
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 48,
+                                  color: AppColors.mutedText,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'No matching treasures found in this realm.',
+                                  style: TextStyle(color: AppColors.parchment),
+                                ),
+                              ],
                             ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final product = filtered[index];
-                          return ProductCard(
-                            product: product,
-                            onTap: () => _navigateToDetail(product),
-                            onQuickBuy: () => _quickBuy(product),
-                          );
-                        },
-                      ),
-                    const SizedBox(height: 36),
+                          )
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 14,
+                                  childAspectRatio: 0.58,
+                                ),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final product = filtered[index];
+                              return ProductCard(
+                                product: product,
+                                onTap: () => _navigateToDetail(product),
+                                onQuickBuy: () => _quickBuy(product),
+                              );
+                            },
+                          ),
+                        const SizedBox(height: 36),
 
-                    // Potential Design Add-ons (Placeholder widget)
-                    const SectionTitle(
-                      'Future Design Add-ons',
-                      subtitle: 'Interactive roadmap features & simulators',
+                        // Potential Design Add-ons (Placeholder widget)
+                        const SectionTitle(
+                          'Future Design Add-ons',
+                          subtitle: 'Interactive roadmap features & simulators',
+                        ),
+                        const DesignAddonsPlaceholder(),
+                        const SizedBox(height: 36),
+
+                        // Footer
+                        const _Footer(),
+                        const SizedBox(height: 24),
+                      ],
                     ),
-                    const DesignAddonsPlaceholder(),
-                    const SizedBox(height: 36),
-
-                    // Footer
-                    const _Footer(),
-                    const SizedBox(height: 24),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -767,12 +1015,8 @@ class _DualStoreSwitcher extends StatelessWidget {
                   backgroundColor: AppColors.dungeon,
                   labelStyle: TextStyle(
                     fontSize: 12,
-                    fontWeight: isSelected
-                        ? FontWeight.w900
-                        : FontWeight.w600,
-                    color: isSelected
-                        ? AppColors.dungeon
-                        : AppColors.parchment,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                    color: isSelected ? AppColors.dungeon : AppColors.parchment,
                   ),
                   side: BorderSide(
                     color: isSelected ? AppColors.gold : AppColors.goldFaded,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
@@ -10,10 +11,13 @@ import '../widgets/three_sixty_viewer.dart';
 import 'cart_screen.dart';
 import 'checkout_screen.dart';
 
-/// Comprehensive product detail screen featuring 360° image scrubber for miniatures,
-/// interactive ColorFiltered LUT split-screen preview for digital presets,
-/// interactive color and size selectors, strictly positive quantity delimiter,
-/// and Add to Cart 🛒 / Buy Now 💰 actions with Philippine Pesos (₱).
+/// Comprehensive product detail screen featuring:
+/// - 360° 8-photo image scrubber + 3x Loupe Zoom for miniatures
+/// - Interactive ColorFiltered LUT split-screen preview on phone photos for presets
+/// - Interactive VTT Grid Overlay for Digital Maps
+/// - Interactive Tailor Yardage Calculator for Sewing Patterns & Slicer Estimator for .STL files
+/// - Color and size selectors, strictly positive quantity delimiter (quantity >= 1),
+///   and Add to Cart 🛒 / Buy Now 💰 actions with Philippine Pesos (₱).
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
 
@@ -27,6 +31,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late ProductColorOption _selectedColor;
   late String _selectedSize;
   int _quantity = 1;
+
+  // Interactive category tools state
+  bool _showVttGridOverlay = true;
+  String _printerMode = 'SLA Resin (0.03mm)';
+  String _fabricBoltWidth = '60" Wide Bolt';
 
   @override
   void initState() {
@@ -97,6 +106,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         actions: [
+          // Wishlist Heart Toggle
+          AnimatedBuilder(
+            animation: WishlistController.instance,
+            builder: (context, _) {
+              final isFav = WishlistController.instance.isFavorite(p.id);
+              return IconButton(
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.redAccent : AppColors.gold,
+                  semanticLabel: 'Toggle favorite item',
+                ),
+                tooltip: 'Bookmark Item',
+                onPressed: () =>
+                    WishlistController.instance.toggleFavorite(p.id),
+              );
+            },
+          ),
           // Animated Cart Action with Badge
           AnimatedBuilder(
             animation: CartController.instance,
@@ -155,9 +181,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Visual Component:
-              // 1) 360° Scrubber (for miniatures)
-              // 2) ColorFiltered Split-Screen Preview (for presets/LUTs)
-              // 3) Zoomable image (for dice & maps)
+              // 1) 360° 8-Photo Scrubber (for miniatures)
+              // 2) ColorFiltered Split-Screen Preview on Phone Photos (for presets/LUTs)
+              // 3) Interactive Viewer with optional VTT Grid Overlay (for maps, patterns, .stl, dice)
               if (p.has360View)
                 ThreeSixtyViewer(images: p.galleryImages, heroTag: p.id)
               else if (p.hasLutPreview)
@@ -174,64 +200,107 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
-                        p.primaryImage,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, progress) =>
-                            progress == null
-                            ? child
-                            : const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.gold,
-                                ),
-                              ),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: AppColors.mutedText,
-                                size: 48,
-                              ),
-                            ),
-                      ),
-                      if (p.isDigital)
-                        Positioned(
-                          top: 12,
-                          left: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.gold,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.file_download,
-                                  size: 14,
-                                  color: AppColors.dungeon,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'DIGITAL DELIVERY',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.dungeon,
+                      InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 3.0,
+                        child: Image.network(
+                          p.primaryImage,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) =>
+                              progress == null
+                              ? child
+                              : const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.gold,
                                   ),
                                 ),
-                              ],
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Center(
+                                child: Icon(
+                                  Icons.broken_image,
+                                  color: AppColors.mutedText,
+                                  size: 48,
+                                ),
+                              ),
+                        ),
+                      ),
+                      if (p.category == ProductCategory.digitalMaps &&
+                          _showVttGridOverlay)
+                        IgnorePointer(
+                          child: CustomPaint(
+                            painter: _VttTacticalGridPainter(),
+                          ),
+                        ),
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.file_download,
+                                size: 14,
+                                color: AppColors.dungeon,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'INSTANT UNLOCK: ${p.downloadFileName}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.dungeon,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (p.category == ProductCategory.digitalMaps)
+                        Positioned(
+                          bottom: 12,
+                          right: 12,
+                          child: ElevatedButton.icon(
+                            onPressed: () => setState(
+                              () => _showVttGridOverlay = !_showVttGridOverlay,
+                            ),
+                            icon: Icon(
+                              _showVttGridOverlay
+                                  ? Icons.grid_on
+                                  : Icons.grid_off,
+                              size: 15,
+                            ),
+                            label: Text(
+                              _showVttGridOverlay
+                                  ? '5ft VTT Grid: ON'
+                                  : 'Gridless View',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black87,
+                              foregroundColor: AppColors.gold,
+                              visualDensity: VisualDensity.compact,
                             ),
                           ),
                         ),
                     ],
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // Category-Specific Interactive Studio Estimator (Sewing Patterns & 3D .STL Files)
+              if (p.category == ProductCategory.sewingPatterns)
+                _buildSewingPatternCalculator()
+              else if (p.category == ProductCategory.stlFiles)
+                _buildStlSlicerEstimator(),
 
               // Product Title, Category & Price Row (Philippine Pesos ₱)
               Row(
@@ -242,11 +311,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          p.category.label.toUpperCase(),
+                          '${p.category.storeType.label.toUpperCase()} • ${p.category.label.toUpperCase()}',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 1.4,
+                            letterSpacing: 1.2,
                             color: AppColors.gold,
                           ),
                         ),
@@ -288,7 +357,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Rating and Reviews Row
+              // Rating, Reviews & Instant Download File Badge
               Row(
                 children: [
                   const Icon(Icons.star, color: AppColors.gold, size: 18),
@@ -310,14 +379,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const Spacer(),
                   const Icon(
-                    Icons.verified,
+                    Icons.lock_open,
                     color: Colors.greenAccent,
-                    size: 16,
+                    size: 15,
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'Authentic (No AI)',
-                    style: TextStyle(fontSize: 11, color: Colors.greenAccent),
+                  Flexible(
+                    child: Text(
+                      p.downloadFileName,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -433,7 +509,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'QUANTITY',
+                        'QUANTITY DELIMITER',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -442,7 +518,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
                       Text(
-                        'Minimum 1 item (delimiter enforced)',
+                        'Minimum 1 item (no negative quantity)',
                         style: TextStyle(
                           fontSize: 11,
                           color: AppColors.mutedText,
@@ -602,4 +678,151 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
+
+  Widget _buildSewingPatternCalculator() {
+    final isWide = _fabricBoltWidth == '60" Wide Bolt';
+    final yards = isWide ? '2.8 Yards' : '3.6 Yards';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.stone,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.goldFaded),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.content_cut, color: AppColors.gold, size: 18),
+              SizedBox(width: 8),
+              Text(
+                'INTERACTIVE TAILOR YARDAGE & PATTERN ESTIMATOR',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.1,
+                  color: AppColors.gold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: ['45" Standard Bolt', '60" Wide Bolt'].map((bolt) {
+              final selected = _fabricBoltWidth == bolt;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(bolt),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _fabricBoltWidth = bolt),
+                  selectedColor: AppColors.gold,
+                  backgroundColor: AppColors.dungeon,
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: selected ? AppColors.dungeon : AppColors.parchment,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Estimated Fabric Required: $yards • Includes 5/8" seam allowances, A4/US Letter home printer tiles (22 pages) + A0 copyshop sheet.',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.parchmentFaded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStlSlicerEstimator() {
+    final isResin = _printerMode.startsWith('SLA');
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.stone,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.goldFaded),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.view_in_ar, color: AppColors.gold, size: 18),
+              SizedBox(width: 8),
+              Text(
+                '3D PRINT .STL SLICER & SUPPORT ESTIMATOR',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.1,
+                  color: AppColors.gold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: ['SLA Resin (0.03mm)', 'FDM PLA+ (0.12mm)'].map((mode) {
+              final selected = _printerMode == mode;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(mode),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _printerMode = mode),
+                  selectedColor: AppColors.gold,
+                  backgroundColor: AppColors.dungeon,
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: selected ? AppColors.dungeon : AppColors.parchment,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isResin
+                ? 'Estimated UV Resin: 38 mL • Print Time: ~3h 20m • 100% Pre-Supported (.STL + Chitubox .CTB included).'
+                : 'Estimated PLA+ Filament: 54g • Print Time: ~4h 45m • Supportless flat-bed orientation included.',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.parchmentFaded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VttTacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFD4A537).withValues(alpha: 0.35)
+      ..strokeWidth = 1.0;
+
+    const double step = 36.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

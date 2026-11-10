@@ -5,7 +5,8 @@ import '../theme/app_theme.dart';
 /// Dart/Flutter Edge Feature (Digital Pattern & LUT Tester Market):
 /// Interactive split-screen slider using Flutter's [ColorFiltered] widget.
 /// Allows creators and buyers to preview the seller's LUT/Lightroom filter effects
-/// on sample phone camera photos or their own custom photo before purchasing!
+/// on sample phone camera photos or their own custom photo before purchasing,
+/// complete with real-time Intensity & Exposure sliders and an Auto-Sweep demo mode!
 class LutSplitPreview extends StatefulWidget {
   final String imageUrl;
 
@@ -15,13 +16,27 @@ class LutSplitPreview extends StatefulWidget {
   State<LutSplitPreview> createState() => _LutSplitPreviewState();
 }
 
-class _LutSplitPreviewState extends State<LutSplitPreview> {
+class _LutSplitPreviewState extends State<LutSplitPreview>
+    with SingleTickerProviderStateMixin {
   // Divider split position: 0.0 (all raw) to 1.0 (all filtered)
   double _splitFraction = 0.5;
 
   int _selectedPresetIndex = 0;
   int _selectedPhonePhotoIndex = 0;
   String? _customPhonePhotoUrl;
+
+  // Fine-tuning controls: LUT Strength (0.2..1.0) & Exposure Offset (-25..+25)
+  double _filterIntensity = 1.0;
+  double _exposureOffset = 0.0;
+  bool _isAutoSweeping = false;
+  late final AnimationController _sweepController;
+
+  static const List<double> _identityMatrix = <double>[
+    1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
 
   static const List<_SamplePhonePhoto> _phonePhotos = [
     _SamplePhonePhoto(
@@ -47,114 +62,128 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
       url:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Dungeons_%26_Dragons_Miniatures.jpg/800px-Dungeons_%26_Dragons_Miniatures.jpg',
     ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Cosplay Cloak',
+      icon: Icons.smartphone,
+      url:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Bayeux_Tapestry_scene1_EDWARD_REX.jpg/800px-Bayeux_Tapestry_scene1_EDWARD_REX.jpg',
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Dice Macro',
+      icon: Icons.smartphone,
+      url:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Polyhedral_dice_set.jpg/800px-Polyhedral_dice_set.jpg',
+    ),
   ];
 
   static const List<_LutPreset> _presets = [
     _LutPreset(
       name: 'Warm Hearth Amber',
       description: 'Golden hour candle glow & warm cinematic skin/portrait tones',
-      filter: ColorFilter.matrix(<double>[
-        1.25,
-        0.0,
-        0.0,
-        0.0,
-        20.0,
-        0.0,
-        1.10,
-        0.0,
-        0.0,
-        10.0,
-        0.0,
-        0.0,
-        0.85,
-        0.0,
-        -15.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-      ]),
+      matrix: <double>[
+        1.25, 0.0, 0.0, 0.0, 20.0,
+        0.0, 1.10, 0.0, 0.0, 10.0,
+        0.0, 0.0, 0.85, 0.0, -15.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
     ),
     _LutPreset(
       name: 'Nordic Frost Cyan',
       description: 'Cool glacial shadows with crisp teal & orange highlights',
-      filter: ColorFilter.matrix(<double>[
-        0.90,
-        0.0,
-        0.0,
-        0.0,
-        -10.0,
-        0.0,
-        1.15,
-        0.0,
-        0.0,
-        15.0,
-        0.0,
-        0.0,
-        1.35,
-        0.0,
-        30.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-      ]),
+      matrix: <double>[
+        0.90, 0.0, 0.0, 0.0, -10.0,
+        0.0, 1.15, 0.0, 0.0, 15.0,
+        0.0, 0.0, 1.35, 0.0, 30.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
     ),
     _LutPreset(
       name: 'Grimdark Monochrome',
       description: 'High dynamic range desaturated silver-gelatin film grain look',
-      filter: ColorFilter.matrix(<double>[
-        0.35,
-        0.35,
-        0.35,
-        0.0,
-        5.0,
-        0.35,
-        0.35,
-        0.35,
-        0.0,
-        5.0,
-        0.35,
-        0.35,
-        0.35,
-        0.0,
-        5.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-      ]),
+      matrix: <double>[
+        0.35, 0.35, 0.35, 0.0, 5.0,
+        0.35, 0.35, 0.35, 0.0, 5.0,
+        0.35, 0.35, 0.35, 0.0, 5.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
     ),
     _LutPreset(
       name: 'Dragon Fire Ruby',
       description: 'Intense crimson saturation for vibrant sunset & neon shots',
-      filter: ColorFilter.matrix(<double>[
-        1.45,
-        0.0,
-        0.0,
-        0.0,
-        25.0,
-        0.0,
-        0.90,
-        0.0,
-        0.0,
-        -10.0,
-        0.0,
-        0.0,
-        0.85,
-        0.0,
-        -15.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-      ]),
+      matrix: <double>[
+        1.45, 0.0, 0.0, 0.0, 25.0,
+        0.0, 0.90, 0.0, 0.0, -10.0,
+        0.0, 0.0, 0.85, 0.0, -15.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
+    ),
+    _LutPreset(
+      name: 'Cyberpunk Gold',
+      description: 'Vibrant magenta-gold contrast boost for night city photography',
+      matrix: <double>[
+        1.30, 0.05, 0.0, 0.0, 18.0,
+        0.0, 1.05, 0.0, 0.0, 5.0,
+        0.05, 0.0, 1.25, 0.0, 20.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
+    ),
+    _LutPreset(
+      name: 'Kodak 400 Vintage',
+      description: 'Soft analog film fade with lifted matte shadows & warm greens',
+      matrix: <double>[
+        1.12, 0.04, 0.0, 0.0, 14.0,
+        0.02, 1.12, 0.02, 0.0, 12.0,
+        0.0, 0.04, 0.95, 0.0, 8.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _sweepController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..addListener(() {
+        if (_isAutoSweeping) {
+          setState(() {
+            _splitFraction = 0.12 + (_sweepController.value * 0.76);
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _sweepController.dispose();
+    super.dispose();
+  }
+
+  void _toggleAutoSweep() {
+    setState(() {
+      _isAutoSweeping = !_isAutoSweeping;
+      if (_isAutoSweeping) {
+        _sweepController.repeat(reverse: true);
+      } else {
+        _sweepController.stop();
+      }
+    });
+  }
+
+  ColorFilter _buildBlendedFilter(List<double> targetMatrix) {
+    final blended = List<double>.generate(20, (i) {
+      final base = _identityMatrix[i];
+      final target = targetMatrix[i];
+      double val = base + (target - base) * _filterIntensity;
+      // Apply exposure boost to RGB translation columns (indices 4, 9, 14)
+      if (i == 4 || i == 9 || i == 14) {
+        val += _exposureOffset;
+      }
+      return val;
+    });
+    return ColorFilter.matrix(blended);
+  }
 
   String get _activePhotoUrl {
     if (_customPhonePhotoUrl != null && _customPhonePhotoUrl!.isNotEmpty) {
@@ -239,6 +268,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
   Widget build(BuildContext context) {
     final activePreset = _presets[_selectedPresetIndex];
     final currentImageUrl = _activePhotoUrl;
+    final activeFilter = _buildBlendedFilter(activePreset.matrix);
 
     return Container(
       decoration: BoxDecoration(
@@ -256,17 +286,59 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'INTERACTIVE LUT PRESET TESTER',
+                  'INTERACTIVE LUT PRESET TESTER STUDIO',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.4,
+                    letterSpacing: 1.3,
                     color: AppColors.gold,
                   ),
                 ),
               ),
+              // Auto-Sweep Toggle Button
+              InkWell(
+                onTap: _toggleAutoSweep,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _isAutoSweeping
+                        ? AppColors.gold
+                        : AppColors.dungeon,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.gold),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isAutoSweeping ? Icons.pause : Icons.play_arrow,
+                        size: 13,
+                        color: _isAutoSweeping
+                            ? AppColors.dungeon
+                            : AppColors.gold,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        _isAutoSweeping ? 'Sweeping' : 'Auto Sweep',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: _isAutoSweeping
+                              ? AppColors.dungeon
+                              : AppColors.gold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.dragonRed,
                   borderRadius: BorderRadius.circular(6),
@@ -369,6 +441,10 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
 
                   return GestureDetector(
                     onHorizontalDragUpdate: (details) {
+                      if (_isAutoSweeping) {
+                        _sweepController.stop();
+                        _isAutoSweeping = false;
+                      }
                       setState(() {
                         _splitFraction = (details.localPosition.dx / width)
                             .clamp(0.02, 0.98);
@@ -385,11 +461,11 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
                               Container(color: AppColors.dungeon),
                         ),
 
-                        // Right Layer: ColorFiltered with custom LUT Matrix
+                        // Right Layer: ColorFiltered with custom LUT Matrix + live intensity/exposure
                         ClipRect(
                           clipper: _RightSideClipper(splitX: splitX),
                           child: ColorFiltered(
-                            colorFilter: activePreset.filter,
+                            colorFilter: activeFilter,
                             child: Image.network(
                               currentImageUrl,
                               fit: BoxFit.cover,
@@ -437,9 +513,9 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
                               color: AppColors.gold,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              'AFTER (LUT FILTER)',
-                              style: TextStyle(
+                            child: Text(
+                              'AFTER (${(_filterIntensity * 100).round()}% LUT)',
+                              style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.dungeon,
@@ -535,6 +611,125 @@ class _LutSplitPreviewState extends State<LutSplitPreview> {
               fontStyle: FontStyle.italic,
             ),
           ),
+          const SizedBox(height: 10),
+
+          // Live LUT Intensity & Exposure Tuning Controls
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.dungeon.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.opacity, size: 14, color: AppColors.gold),
+                    const SizedBox(width: 6),
+                    const SizedBox(
+                      width: 78,
+                      child: Text(
+                        'LUT Strength',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.parchment,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 12,
+                          ),
+                        ),
+                        child: Slider(
+                          value: _filterIntensity,
+                          min: 0.2,
+                          max: 1.0,
+                          activeColor: AppColors.gold,
+                          inactiveColor: Colors.white12,
+                          onChanged: (v) =>
+                              setState(() => _filterIntensity = v),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 38,
+                      child: Text(
+                        '${(_filterIntensity * 100).round()}%',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.wb_sunny_outlined,
+                      size: 14,
+                      color: AppColors.gold,
+                    ),
+                    const SizedBox(width: 6),
+                    const SizedBox(
+                      width: 78,
+                      child: Text(
+                        'Exposure EV',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.parchment,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 12,
+                          ),
+                        ),
+                        child: Slider(
+                          value: _exposureOffset,
+                          min: -25.0,
+                          max: 25.0,
+                          activeColor: AppColors.gold,
+                          inactiveColor: Colors.white12,
+                          onChanged: (v) =>
+                              setState(() => _exposureOffset = v),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 38,
+                      child: Text(
+                        '${_exposureOffset >= 0 ? '+' : ''}${_exposureOffset.round()}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -556,12 +751,12 @@ class _SamplePhonePhoto {
 class _LutPreset {
   final String name;
   final String description;
-  final ColorFilter filter;
+  final List<double> matrix;
 
   const _LutPreset({
     required this.name,
     required this.description,
-    required this.filter,
+    required this.matrix,
   });
 }
 

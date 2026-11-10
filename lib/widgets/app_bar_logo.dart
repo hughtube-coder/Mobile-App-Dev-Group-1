@@ -58,54 +58,57 @@ class _AppBarLogoState extends State<AppBarLogo>
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.goldFaded, width: 1.2),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // SVG Logo optimized with flutter_svg
-              SizedBox(
-                width: 32,
-                height: 32,
-                child: SvgPicture.asset(
-                  'assets/logo.svg',
-                  semanticsLabel: 'Marketing Vikings D20 Shield Logo',
-                  placeholderBuilder: (context) => const SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.gold,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // SVG Logo optimized with flutter_svg
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: SvgPicture.asset(
+                    'assets/logo.svg',
+                    semanticsLabel: 'Marketing Vikings D20 Shield Logo',
+                    placeholderBuilder: (context) => const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.gold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MARKETING',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.6,
-                      color: AppColors.gold,
-                      height: 1.1,
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MARKETING',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.6,
+                        color: AppColors.gold,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'VIKINGS',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.8,
-                      color: AppColors.parchment,
-                      height: 1.1,
+                    Text(
+                      'VIKINGS',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.8,
+                        color: AppColors.parchment,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

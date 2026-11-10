@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
@@ -180,41 +181,84 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
 
-                  // Top Right: Rating Chip
+                  // Top Right: Rating Chip + Wishlist Heart Button
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.goldFaded),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              size: 12,
-                              color: AppColors.gold,
-                              semanticLabel: 'Product review rating star',
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
                             ),
-                            const SizedBox(width: 3),
-                            Text(
-                              product.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.parchment,
-                              ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.75),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.goldFaded),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  size: 12,
+                                  color: AppColors.gold,
+                                  semanticLabel: 'Product review rating star',
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  product.rating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.parchment,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          AnimatedBuilder(
+                            animation: WishlistController.instance,
+                            builder: (context, _) {
+                              final isFav = WishlistController.instance
+                                  .isFavorite(product.id);
+                              return GestureDetector(
+                                onTap: () {
+                                  WishlistController.instance.toggleFavorite(
+                                    product.id,
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.7),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isFav
+                                          ? Colors.redAccent
+                                          : Colors.white24,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    isFav
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: 14,
+                                    color: isFav
+                                        ? Colors.redAccent
+                                        : AppColors.parchment,
+                                    semanticLabel: 'Bookmark favorite item',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
