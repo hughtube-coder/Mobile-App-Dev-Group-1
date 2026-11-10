@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/dice_quest_controller.dart';
 import '../theme/app_theme.dart';
 import 'product_photo.dart';
 
@@ -87,6 +88,7 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
     }
 
     _accumulatedDelta += details.delta.dx;
+    DiceQuestController.instance.recordScrubberUsed();
     if (_accumulatedDelta.abs() >= _sensitivity) {
       final step = (_accumulatedDelta / _sensitivity).toInt();
       final totalFrames = widget.images.length;

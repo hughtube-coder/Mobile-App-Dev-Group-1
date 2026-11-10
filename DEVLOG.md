@@ -204,7 +204,18 @@ Every core widget category presented in the Mobile Application Development lectu
     - **Credit / Debit Card:** Formatted 16-digit card number, `MM/YY` expiry date, and 3-digit CVV code.
   - **Authentic 360° Tabletop Miniature Inspection Scrubber (`lib/widgets/three_sixty_viewer.dart`):** Clarifies that the scrubber allows tabletop collectors to inspect paint glazes, edge highlights, and wash layers before purchase. Features a 3D turntable pedestal, 8 clickable degree chips (`0°` to `315°`), and auto-spin controls.
   - **Interactive Tavern RPG Mini-Game (`lib/widgets/dice_roller_sheet.dart`):** Overhauled with 4 engaging game modes: **Monster Boss Raids** with live animated boss HP bars and Nat-20 critical strikes, **Barkeep Dice Duels**, **D100 Mystery Loot drops**, and an educational polyhedral dice tray.
-  - **Compiled Final Standalone `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (52.7 MB, 55,242,431 bytes) with 0 analyzer errors and 100% widget test pass rate.
+  - **Non-Infinite Dice Economy & Tavern Guild Quests (`lib/controllers/dice_quest_controller.dart`, `lib/widgets/dice_roller_sheet.dart`):**
+    - Dice rolls are no longer infinite; players start with a finite stamina balance (3 starting rolls) that decrements by 1 on every roll.
+    - If rolls reach 0, rolling is blocked and automatically switches to the **Valhalla Guild Bounty Board** to complete quests to earn rolls:
+      1. **Catalog Inspector:** View 5 distinct items (`0/5`) -> **+2 Rolls** 🎲
+      2. **Market Wanderer:** Browse the e-commerce catalog for 10 seconds (`0/10s`) -> **+2 Rolls** 🎲
+      3. **Turntable Master:** Inspect paint highlights with the 8-angle 360° scrubber -> **+2 Rolls** 🎲
+      4. **LUT Colorist:** Test a Lightroom preset using the split-screen slider -> **+2 Rolls** 🎲
+      5. **Viking Merchant:** Add any item to the shopping cart -> **+3 Rolls** 🎲
+      6. **Valhalla Champion:** Slay a Tavern Boss or win a Barkeep Duel -> **+3 Rolls** 🎲
+      7. **Guild Member Loyalty:** Log in or create a verified account -> **+5 Rolls** 🎲
+    - Real-time progress bars, live roll counters on the Floating Action Button (`Roll D20 (X)`) and AppBar dice badge, interactive glowing `CLAIM 🎁` buttons with haptic feedback, and a `Refresh Bounty Board 🔄` button for infinite repeat fun.
+  - **Compiled Final Standalone `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (52.8 MB, 55,324,891 bytes) with 0 analyzer errors and 100% test pass rate across 6 automated widget and controller tests.
 
 ---
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/dice_quest_controller.dart';
 import '../theme/app_theme.dart';
 import 'product_photo.dart';
 
@@ -450,6 +451,7 @@ class _LutSplitPreviewState extends State<LutSplitPreview>
                         _splitFraction = (details.localPosition.dx / width)
                             .clamp(0.02, 0.98);
                       });
+                      DiceQuestController.instance.recordLutTested();
                     },
                     child: Stack(
                       fit: StackFit.expand,

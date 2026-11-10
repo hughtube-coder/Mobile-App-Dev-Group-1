@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../controllers/auth_controller.dart';
 import '../controllers/cart_controller.dart';
+import '../controllers/dice_quest_controller.dart';
 import '../controllers/vault_controller.dart';
 import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
@@ -55,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   late final ScrollController _scrollController;
   bool _isScrolled = false;
+  Timer? _browseTimer;
 
   @override
   void initState() {
@@ -66,10 +69,18 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _isScrolled = scrolled);
       }
     });
+
+    // 10-second catalog browse timer for Guild Tavern Quests
+    _browseTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        DiceQuestController.instance.recordBrowseTick();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _browseTimer?.cancel();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -300,11 +311,67 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          // D20 Quick Dice Roller Action
-          IconButton(
-            icon: const Icon(Icons.casino, color: AppColors.gold),
-            tooltip: 'Roll Polyhedral Dice 🎲',
-            onPressed: _openDiceRoller,
+          // D20 Quick Dice Roller Action with Live Roll Stamina & Quest Badge
+          AnimatedBuilder(
+            animation: DiceQuestController.instance,
+            builder: (context, _) {
+              final rolls = DiceQuestController.instance.availableRolls;
+              final claimable = DiceQuestController.instance.claimableCount;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.casino, color: AppColors.gold),
+                    tooltip: 'Tavern Dice & Quests 🎲 ($rolls rolls available)',
+                    onPressed: _openDiceRoller,
+                  ),
+                  if (claimable > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: Colors.amber,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                        child: Text(
+                          '$claimable',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  else if (rolls == 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(2.5),
+                        decoration: const BoxDecoration(
+                          color: AppColors.dragonRed,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                        child: const Text(
+                          '0',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
 
           // Cart Action with Live Badge (Icon: 🛒)
@@ -747,24 +814,36 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       // FloatingActionButton on Scaffold (Lecture Slide 18)
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openDiceRoller,
-        backgroundColor: AppColors.gold,
-        foregroundColor: AppColors.dungeon,
-        tooltip: 'Roll Valhalla D20 Polyhedral Dice 🎲',
-        icon: const Icon(
-          Icons.casino,
-          color: AppColors.dungeon,
-          semanticLabel: 'Roll Valhalla D20 Polyhedral Dice',
-        ),
-        label: const Text(
-          'Roll D20',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-            color: AppColors.dungeon,
-          ),
-        ),
+      floatingActionButton: AnimatedBuilder(
+        animation: DiceQuestController.instance,
+        builder: (context, _) {
+          final rolls = DiceQuestController.instance.availableRolls;
+          final claimable = DiceQuestController.instance.claimableCount;
+          final hasRolls = rolls > 0;
+          return FloatingActionButton.extended(
+            onPressed: _openDiceRoller,
+            backgroundColor: hasRolls ? AppColors.gold : Colors.amber.shade700,
+            foregroundColor: AppColors.dungeon,
+            tooltip: hasRolls
+                ? 'Roll Valhalla D20 Polyhedral Dice 🎲 ($rolls rolls remaining)'
+                : 'Out of Rolls! Complete Quests to Earn 📜',
+            icon: Icon(
+              hasRolls ? Icons.casino : Icons.assignment_turned_in,
+              color: AppColors.dungeon,
+              semanticLabel: 'Roll Valhalla D20 Polyhedral Dice',
+            ),
+            label: Text(
+              hasRolls
+                  ? 'Roll D20 ($rolls)'
+                  : (claimable > 0 ? 'Claim Rolls (!$claimable)' : 'Get Rolls 📜'),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8,
+                color: AppColors.dungeon,
+              ),
+            ),
+          );
+        },
       ),
 
       // Dynamic animated tavern background containing scrollable shop

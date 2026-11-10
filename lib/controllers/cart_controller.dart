@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/cart_item.dart';
 import '../models/product.dart';
+import 'dice_quest_controller.dart';
 
 /// Central cart state controller managing added items, quantities, promo codes, and totals.
 /// Notifies listeners whenever the cart contents change.
@@ -92,6 +93,7 @@ class CartController extends ChangeNotifier {
         ),
       );
     }
+    DiceQuestController.instance.recordCartAdded();
     notifyListeners();
   }
 

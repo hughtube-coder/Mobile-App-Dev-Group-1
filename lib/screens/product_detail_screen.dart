@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/dice_quest_controller.dart';
 import '../controllers/wishlist_controller.dart';
 import '../models/product.dart';
 import '../theme/app_theme.dart';
@@ -44,6 +45,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     _selectedColor = widget.product.colors.first;
     _selectedSize = widget.product.sizes.first;
+    DiceQuestController.instance.recordProductView(widget.product.id);
   }
 
   void _addToCart() {

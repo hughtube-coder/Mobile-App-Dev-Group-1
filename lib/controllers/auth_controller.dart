@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'cart_controller.dart';
+import 'dice_quest_controller.dart';
 
 class UserAccount {
   final String id;
@@ -166,6 +167,7 @@ class AuthController extends ChangeNotifier {
 
     _failedAttempts[cleanEmail] = 0;
     _currentUser = account;
+    DiceQuestController.instance.recordUserLogin();
 
     final loginEmail = DispatchedEmail(
       toEmail: account.email,
@@ -354,6 +356,7 @@ class AuthController extends ChangeNotifier {
     _activeResetOtps.remove(cleanEmail);
     _failedAttempts[cleanEmail] = 0;
     _currentUser = account;
+    DiceQuestController.instance.recordUserLogin();
 
     final confirmEmail = DispatchedEmail(
       toEmail: cleanEmail,

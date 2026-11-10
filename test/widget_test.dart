@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:marketing_vikings/controllers/auth_controller.dart';
+import 'package:marketing_vikings/controllers/dice_quest_controller.dart';
 import 'package:marketing_vikings/main.dart';
 import 'package:marketing_vikings/models/product.dart';
 import 'package:marketing_vikings/utils/currency_formatter.dart';
@@ -134,7 +135,7 @@ void main() {
 
       // Verify FloatingActionButton (Slide 18)
       expect(find.byType(FloatingActionButton), findsOneWidget);
-      expect(find.text('Roll D20'), findsOneWidget);
+      expect(find.textContaining('Roll D20'), findsOneWidget);
 
       // Verify CarouselView (Slide 16)
       expect(find.byType(CarouselView), findsOneWidget);
@@ -178,6 +179,36 @@ void main() {
       );
       expect(resetConfirm.success, isTrue);
       expect(auth.isSignedIn, isTrue);
+    },
+  );
+
+  test(
+    'DiceQuestController enforces finite roll stamina and grants rolls via tavern quests',
+    () {
+      final dice = DiceQuestController.instance;
+
+      // Starting rolls should be greater than 0
+      expect(dice.availableRolls, greaterThanOrEqualTo(1));
+      final initialRolls = dice.availableRolls;
+
+      // Consuming 1 roll decrements stamina
+      final consumed = dice.consumeRoll();
+      expect(consumed, isTrue);
+      expect(dice.availableRolls, initialRolls - 1);
+
+      // Testing LUT or 360 scrubber progresses quests
+      dice.recordScrubberUsed();
+      final scrubberQuest = dice.quests.firstWhere((q) => q.id == 'quest_test_360');
+      expect(scrubberQuest.isCompleted, isTrue);
+      expect(scrubberQuest.canClaim, isTrue);
+
+      // Claiming reward grants rolls
+      final currentRolls = dice.availableRolls;
+      final reward = dice.claimReward('quest_test_360');
+      expect(reward, scrubberQuest.rewardRolls);
+      expect(dice.availableRolls, currentRolls + reward);
+      expect(scrubberQuest.isClaimed, isTrue);
+      expect(scrubberQuest.canClaim, isFalse);
     },
   );
 }
