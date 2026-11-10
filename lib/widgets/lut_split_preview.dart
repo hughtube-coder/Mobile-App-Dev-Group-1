@@ -46,34 +46,34 @@ class _LutSplitPreviewState extends State<LutSplitPreview>
       url: '', // Uses widget.imageUrl
     ),
     _SamplePhonePhoto(
-      label: '📱 Phone: Portrait Owl',
+      label: '📱 Phone: Studio Portrait',
       icon: Icons.smartphone,
-      // Authentic Flutter Slide 21 Owl photo
-      url: 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+      url: 'assets/images/lut_01.jpg',
     ),
     _SamplePhonePhoto(
-      label: '📱 Phone: Street Light',
+      label: '📱 Phone: Tavern Mini',
       icon: Icons.smartphone,
-      url:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/800px-Camponotus_flavomarginatus_ant.jpg',
+      url: 'assets/images/mini_01.jpg',
     ),
     _SamplePhonePhoto(
-      label: '📱 Phone: Tabletop Shot',
+      label: '📱 Phone: Amber Warmth',
       icon: Icons.smartphone,
-      url:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Dungeons_%26_Dragons_Miniatures.jpg/800px-Dungeons_%26_Dragons_Miniatures.jpg',
-    ),
-    _SamplePhonePhoto(
-      label: '📱 Phone: Cosplay Cloak',
-      icon: Icons.smartphone,
-      url:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Bayeux_Tapestry_scene1_EDWARD_REX.jpg/800px-Bayeux_Tapestry_scene1_EDWARD_REX.jpg',
+      url: 'assets/images/lut_02.jpg',
     ),
     _SamplePhonePhoto(
       label: '📱 Phone: Dice Macro',
       icon: Icons.smartphone,
-      url:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Polyhedral_dice_set.jpg/800px-Polyhedral_dice_set.jpg',
+      url: 'assets/images/dice_01.jpg',
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Linen Texture',
+      icon: Icons.smartphone,
+      url: 'assets/images/pattern_01.jpg',
+    ),
+    _SamplePhonePhoto(
+      label: '📱 Phone: Ancient Map',
+      icon: Icons.smartphone,
+      url: 'assets/images/map_01.jpg',
     ),
   ];
 

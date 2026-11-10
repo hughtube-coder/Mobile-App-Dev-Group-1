@@ -272,16 +272,18 @@ class _AuthScreenState extends State<AuthScreen> {
             final user = auth.currentUser;
 
             return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Active Session Card (shows signed-in profile + Log Out, or welcome header)
-                    _buildCurrentSessionCard(user),
-                    const SizedBox(height: 16),
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: user != null && _selectedTab != 2
+                      ? _buildSignedInDashboard(user, auth)
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Active Session Card (shows signed-in profile + Log Out, or welcome header)
+                            _buildCurrentSessionCard(user),
+                            const SizedBox(height: 16),
 
                     // Mode Switcher Tabs: Log In | Create Account | Email Reset
                     Container(
@@ -376,6 +378,133 @@ class _AuthScreenState extends State<AuthScreen> {
         },
       ),
       ),
+    );
+  }
+
+  Widget _buildProfileRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.mutedText,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.parchment,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSignedInDashboard(UserAccount user, AuthController auth) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Active Session Card
+        _buildCurrentSessionCard(user),
+        const SizedBox(height: 16),
+
+        // Account Details Card
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.stone,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.goldFaded),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.shield_outlined, color: AppColors.gold, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'SECURITY STATUS & ACTIVE SESSION',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.1,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _buildProfileRow('Account ID', user.id),
+              const Divider(color: Colors.white10),
+              _buildProfileRow('Email Status', '✅ Verified & Protected'),
+              const Divider(color: Colors.white10),
+              _buildProfileRow('Marketplace Role', user.role),
+              const Divider(color: Colors.white10),
+              _buildProfileRow('Downloads Vault', '🔐 Active & Synchronized'),
+              const SizedBox(height: 18),
+
+              // Action buttons: Reset Password or Log Out
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _selectedTab = 2; // Open email password reset
+                          _resetEmailCtrl.text = user.email;
+                        });
+                      },
+                      icon: const Icon(Icons.password, size: 15),
+                      label: const Text('Change Password'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.gold,
+                        side: const BorderSide(color: AppColors.gold),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        AuthController.instance.signOut();
+                        setState(() {
+                          _statusMessage = 'You have logged out of your account.';
+                          _isStatusSuccess = true;
+                          _selectedTab = 0;
+                        });
+                      },
+                      icon: const Icon(Icons.logout, size: 15),
+                      label: const Text('Log Out'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.dragonRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Dispatched Security Emails Inbox Viewer
+        _buildEmailOutboxSection(auth),
+      ],
     );
   }
 
@@ -639,6 +768,8 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _signInPassCtrl,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _obscureSignIn,
+              maxLength: 15,
+              inputFormatters: [LengthLimitingTextInputFormatter(15)],
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
                 label: 'Password',
@@ -878,11 +1009,13 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _signUpPassCtrl,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _obscureSignUp,
+              maxLength: 15,
+              inputFormatters: [LengthLimitingTextInputFormatter(15)],
               onChanged: (_) => setState(() {}),
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'Password',
-                hint: 'Min 8 chars, A-Z, a-z, 0-9 & symbol (@#!)',
+                label: 'Password (8–15 chars)',
+                hint: 'Min 8, max 15 chars, A-Z, a-z, 0-9 & symbol (@#!)',
                 icon: Icons.security,
                 suffix: IconButton(
                   icon: Icon(
@@ -906,6 +1039,8 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _signUpConfirmCtrl,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _obscureSignUp,
+              maxLength: 15,
+              inputFormatters: [LengthLimitingTextInputFormatter(15)],
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
                 label: 'Confirm Password',
@@ -1122,6 +1257,11 @@ class _AuthScreenState extends State<AuthScreen> {
             TextFormField(
               controller: _resetOtpCtrl,
               keyboardType: TextInputType.number,
+              maxLength: 6,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
               style: const TextStyle(
                 color: AppColors.gold,
                 fontWeight: FontWeight.w900,
@@ -1146,11 +1286,13 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _resetNewPassCtrl,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _obscureResetPass,
+              maxLength: 15,
+              inputFormatters: [LengthLimitingTextInputFormatter(15)],
               onChanged: (_) => setState(() {}),
               style: const TextStyle(color: AppColors.parchment),
               decoration: _inputDecoration(
-                label: 'New Password',
-                hint: 'Min 8 chars, uppercase, lowercase, number & symbol',
+                label: 'New Password (8–15 chars)',
+                hint: 'Min 8, max 15 chars, uppercase, lowercase, number & symbol',
                 icon: Icons.lock_reset,
                 suffix: IconButton(
                   icon: Icon(
@@ -1195,7 +1337,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildPasswordStrengthChecklist(String password, double strength) {
-    final hasLen = password.length >= 8;
+    final hasLen = password.length >= 8 && password.length <= 15;
     final hasUpper = RegExp(r'[A-Z]').hasMatch(password);
     final hasLower = RegExp(r'[a-z]').hasMatch(password);
     final hasNum = RegExp(r'[0-9]').hasMatch(password);
@@ -1255,7 +1397,7 @@ class _AuthScreenState extends State<AuthScreen> {
             spacing: 10,
             runSpacing: 4,
             children: [
-              _ruleBadge('8+ Chars', hasLen),
+              _ruleBadge('8–15 Chars', hasLen),
               _ruleBadge('A-Z Upper', hasUpper),
               _ruleBadge('a-z Lower', hasLower),
               _ruleBadge('0-9 Number', hasNum),

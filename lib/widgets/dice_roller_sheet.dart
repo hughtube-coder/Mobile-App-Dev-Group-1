@@ -26,14 +26,18 @@ class _DiceRollerSheetState extends State<DiceRollerSheet>
   late final Animation<double> _scaleAnimation;
   final math.Random _random = math.Random();
 
-  int _selectedGameTab = 0; // 0 = Monster Battle, 1 = Mystery Loot, 2 = Free Roller
+  int _selectedGameTab = 0; // 0 = Monster Raid, 1 = Barkeep Duel, 2 = Mystery Loot, 3 = Free Roller
   int _selectedSides = 20;
   int _modifier = 0;
   int _currentRoll = 20;
+  int _barkeepRoll = 12;
   bool _isRolling = false;
 
-  // Monster Battle state
+  // Monster Battle state with live HP bars
   int _selectedMonsterIndex = 0;
+  final Map<int, int> _monsterHp = {0: 30, 1: 50, 2: 15};
+  static const Map<int, int> _monsterMaxHp = {0: 30, 1: 50, 2: 15};
+
   static const List<_MonsterTarget> _monsters = [
     _MonsterTarget(
       name: 'Frost Troll',
@@ -59,7 +63,11 @@ class _DiceRollerSheetState extends State<DiceRollerSheet>
   ];
 
   static const List<int> _diceTypes = [4, 6, 8, 10, 12, 20, 100];
-  final List<String> _history = ['D20: 20 (Critical Hit!)', 'D20: 16 (Hit)', 'D100: 94 (Legendary Loot!)'];
+  final List<String> _history = [
+    '⚔️ D20: 20 (Critical Hit!)',
+    '🍺 Duel: You 18 vs Barkeep 14 (Won VIKING10)',
+    '🎁 D100: 95 (Mythic Loot Unlocked!)',
+  ];
 
   String? _unlockedPromoCode;
   String? _battleOutcomeMessage;
@@ -116,43 +124,88 @@ class _DiceRollerSheetState extends State<DiceRollerSheet>
 
       String logEntry;
       if (_selectedGameTab == 0) {
-        // Monster Battle
+        // Mode 0: Monster Boss Raid
         final monster = _monsters[_selectedMonsterIndex];
+        final maxHp = _monsterMaxHp[_selectedMonsterIndex] ?? 30;
+        int currentHp = _monsterHp[_selectedMonsterIndex] ?? maxHp;
+
         if (finalRoll == 20) {
-          _battleOutcomeMessage = '🔥 NATURAL 20! CRITICAL HIT! Defeated ${monster.name}!';
+          final damage = 25;
+          currentHp = (currentHp - damage).clamp(0, maxHp);
+          _monsterHp[_selectedMonsterIndex] = currentHp;
+          _battleOutcomeMessage =
+              '🔥 NATURAL 20 CRITICAL HIT! Dealt $damage massive damage! ${currentHp == 0 ? "Boss Defeated!" : "Boss HP: $currentHp/$maxHp"}';
           _unlockedPromoCode = monster.rewardCode;
-          logEntry = '⚔️ D20: 20 (NAT 20 CRIT vs ${monster.name}!)';
+          logEntry = '⚔️ D20: 20 (NAT 20 CRIT! -${damage}HP vs ${monster.name})';
           CartController.instance.applyPromoCode(monster.rewardCode);
         } else if (finalRoll == 1) {
-          _battleOutcomeMessage = '💀 NATURAL 1! Critical Fumble! The troll hit your shield!';
+          _battleOutcomeMessage =
+              '💀 NATURAL 1 FUMBLE! The ${monster.name} parried and counter-attacked your shield!';
           logEntry = '💀 D20: 1 (FUMBLE vs ${monster.name})';
         } else if (total >= monster.ac) {
-          _battleOutcomeMessage = '⚔️ HIT! Total $total beats AC ${monster.ac}! Monster takes 18 damage!';
-          logEntry = '⚔️ D20+$_modifier: $total (HIT vs ${monster.name})';
+          final damage = math.max(6, (total - monster.ac) * 3 + 4);
+          currentHp = (currentHp - damage).clamp(0, maxHp);
+          _monsterHp[_selectedMonsterIndex] = currentHp;
+          if (currentHp == 0) {
+            _battleOutcomeMessage =
+                '🏆 BOSS SLAIN! Dealt $damage damage and defeated ${monster.name}! Unlocked code ${monster.rewardCode}!';
+            _unlockedPromoCode = monster.rewardCode;
+            CartController.instance.applyPromoCode(monster.rewardCode);
+          } else {
+            _battleOutcomeMessage =
+                '⚔️ HIT! Total $total beats AC ${monster.ac}! Dealt $damage damage (Remaining HP: $currentHp/$maxHp)!';
+          }
+          logEntry = '⚔️ D20+$_modifier: $total (HIT -$damage HP vs ${monster.name})';
         } else {
-          _battleOutcomeMessage = '💨 MISS! Total $total is below AC ${monster.ac}. The monster parried!';
+          _battleOutcomeMessage =
+              '💨 MISS! Total $total is below AC ${monster.ac}. The monster dodged!';
           logEntry = '💨 D20+$_modifier: $total (MISS vs ${monster.name})';
         }
       } else if (_selectedGameTab == 1) {
-        // Mystery Loot Box (D100)
+        // Mode 1: Tavern Barkeep Duel
+        final bRoll = 1 + _random.nextInt(20);
+        _barkeepRoll = bRoll;
+        if (total > bRoll) {
+          _battleOutcomeMessage =
+              '🏆 YOU WIN! You rolled $total vs Barkeep\'s $bRoll! Barkeep slides you code VIKING10 (10% OFF)!';
+          _unlockedPromoCode = 'VIKING10';
+          logEntry = '🍺 Duel Won! You: $total vs Barkeep: $bRoll';
+          CartController.instance.applyPromoCode('VIKING10');
+        } else if (total == bRoll) {
+          _battleOutcomeMessage =
+              '⚔️ TIE ROLL ($total vs $bRoll)! A tense standoff at the bar! Roll again to break the tie!';
+          logEntry = '🍺 Duel Tie: $total vs $bRoll';
+        } else {
+          _battleOutcomeMessage =
+              '🍻 Barkeep Wins ($bRoll vs your $total)! "Drink your flagon and roll again, traveler!"';
+          logEntry = '🍺 Barkeep: $bRoll beat You: $total';
+        }
+      } else if (_selectedGameTab == 2) {
+        // Mode 2: Mystery Loot Box (D100)
         if (finalRoll >= 90) {
-          _battleOutcomeMessage = '🏆 MYTHIC TREASURE! Unlocked Promo Code: MYTHIC50 (-₱50)';
+          _battleOutcomeMessage =
+              '🏆 MYTHIC ARTIFACT! Unlocked secret promo voucher CREATOR50 (-₱50)!';
           _unlockedPromoCode = 'CREATOR50';
-          logEntry = '🎁 D100: $finalRoll (Mythic Artifact Drop!)';
+          logEntry = '🎁 D100: $finalRoll (Mythic Loot Drop!)';
           CartController.instance.applyPromoCode('CREATOR50');
         } else if (finalRoll >= 60) {
-          _battleOutcomeMessage = '💎 RARE LOOT! Hand-painted miniature resin chest discovered!';
+          _battleOutcomeMessage =
+              '💎 RARE DROP! Artisan 3D Resin Dice Vault & Miniature Chest!';
           logEntry = '🎁 D100: $finalRoll (Rare Mini Chest)';
         } else if (finalRoll >= 30) {
-          _battleOutcomeMessage = '📜 UNCOMMON LOOT! 8K VTT Dungeon Map PDF discovered!';
-          logEntry = '🎁 D100: $finalRoll (Uncommon Map)';
+          _battleOutcomeMessage =
+              '📜 UNCOMMON DROP! 8K High-Res Tactical VTT Map PDF unlocked!';
+          logEntry = '🎁 D100: $finalRoll (Uncommon Battle Map)';
         } else {
-          _battleOutcomeMessage = '🐟 COMMON LOOT! Iron rations and a wooden tankard.';
-          logEntry = '🎁 D100: $finalRoll (Common Loot)';
+          _battleOutcomeMessage =
+              '🪵 COMMON DROP! Runic stone dice pouch & traveler\'s journey rations.';
+          logEntry = '🎁 D100: $finalRoll (Common Traveler Loot)';
         }
       } else {
-        // Free roller
-        final modLabel = _modifier == 0 ? '' : (_modifier > 0 ? '+$_modifier' : '$_modifier');
+        // Mode 3: Free Tabletop Roller
+        final modLabel = _modifier == 0
+            ? ''
+            : (_modifier > 0 ? '+$_modifier' : '$_modifier');
         logEntry = 'D$_selectedSides$modLabel: $total';
       }
 
@@ -237,7 +290,7 @@ class _DiceRollerSheetState extends State<DiceRollerSheet>
               ),
               const SizedBox(height: 8),
 
-              // Mini-Game Mode Selector Tabs: Battle | Mystery Loot | Free Roller
+              // Mini-Game Mode Selector Tabs: Boss Raid | Barkeep Duel | Mystery Loot | Dice Tray
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
@@ -247,52 +300,153 @@ class _DiceRollerSheetState extends State<DiceRollerSheet>
                 ),
                 child: Row(
                   children: [
-                    _buildGameTab(0, Icons.shield, 'Monster Battle'),
-                    _buildGameTab(1, Icons.card_giftcard, 'Mystery Loot'),
-                    _buildGameTab(2, Icons.casino_outlined, 'Free Roller'),
+                    _buildGameTab(0, Icons.shield, 'Boss Raid'),
+                    _buildGameTab(1, Icons.sports_kabaddi, 'Barkeep Duel'),
+                    _buildGameTab(2, Icons.card_giftcard, 'Mystery Loot'),
+                    _buildGameTab(3, Icons.casino_outlined, 'Dice Tray'),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
 
-              // Tab 0 Content: Monster Target Selector
+              // Tab 0 Content: Monster Target Selector & Boss HP Bar
               if (_selectedGameTab == 0) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_monsters.length, (i) {
-                    final m = _monsters[i];
-                    final isSelected = i == _selectedMonsterIndex;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: ChoiceChip(
-                        avatar: Icon(
-                          m.icon,
-                          size: 14,
-                          color: isSelected ? AppColors.dungeon : AppColors.gold,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_monsters.length, (i) {
+                      final m = _monsters[i];
+                      final isSelected = i == _selectedMonsterIndex;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
+                          avatar: Icon(
+                            m.icon,
+                            size: 14,
+                            color: isSelected ? AppColors.dungeon : AppColors.gold,
+                          ),
+                          label: Text('${m.name} (AC ${m.ac})'),
+                          selected: isSelected,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedMonsterIndex = i;
+                              _selectedSides = 20;
+                            });
+                          },
+                          selectedColor: AppColors.gold,
+                          backgroundColor: AppColors.dungeon,
+                          labelStyle: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                            color: isSelected ? AppColors.dungeon : AppColors.parchment,
+                          ),
+                          visualDensity: VisualDensity.compact,
                         ),
-                        label: Text('${m.name} (AC ${m.ac})'),
-                        selected: isSelected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedMonsterIndex = i;
-                            _selectedSides = 20;
-                          });
-                        },
-                        selectedColor: AppColors.gold,
-                        backgroundColor: AppColors.dungeon,
-                        labelStyle: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                          color: isSelected ? AppColors.dungeon : AppColors.parchment,
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Boss Health Bar
+                Builder(builder: (context) {
+                  final maxHp = _monsterMaxHp[_selectedMonsterIndex] ?? 30;
+                  final curHp = _monsterHp[_selectedMonsterIndex] ?? maxHp;
+                  final ratio = curHp / maxHp;
+                  final isDead = curHp == 0;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.dungeon,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: isDead ? Colors.greenAccent : Colors.white12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isDead
+                                  ? '💀 BOSS DEFEATED!'
+                                  : 'BOSS HP: $curHp / $maxHp',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDead ? Colors.greenAccent : AppColors.gold,
+                              ),
+                            ),
+                            if (isDead)
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _monsterHp[_selectedMonsterIndex] = maxHp;
+                                    _battleOutcomeMessage = null;
+                                  });
+                                },
+                                child: const Text(
+                                  'Respawn Boss ↺',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.greenAccent,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        visualDensity: VisualDensity.compact,
+                        const SizedBox(height: 5),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: ratio,
+                            minHeight: 7,
+                            backgroundColor: Colors.white12,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ratio > 0.5
+                                  ? Colors.greenAccent
+                                  : (ratio > 0.25 ? Colors.orangeAccent : AppColors.dragonRed),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 10),
+              ] else if (_selectedGameTab == 1) ...[
+                // Tab 1 Content: Barkeep Duel Arena Status
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.dungeon,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.goldFaded),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          const Text('YOUR ROLL', style: TextStyle(fontSize: 10, color: AppColors.mutedText)),
+                          Text('$_currentRoll', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.gold)),
+                        ],
                       ),
-                    );
-                  }),
+                      const Text('VS', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.dragonRed)),
+                      Column(
+                        children: [
+                          const Text('BARKEEP ROLL', style: TextStyle(fontSize: 10, color: AppColors.mutedText)),
+                          Text('$_barkeepRoll', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 10),
-              ] else if (_selectedGameTab == 2) ...[
-                // Tab 2 Content: Standard Polyhedral Dice Type Selector
+              ] else if (_selectedGameTab == 3) ...[
+                // Tab 3 Content: Standard Polyhedral Dice Type Selector
                 SizedBox(
                   height: 32,
                   child: ListView.separated(

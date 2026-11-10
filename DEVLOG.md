@@ -193,7 +193,18 @@ Every core widget category presented in the Mobile Application Development lectu
   - **Upgraded `LutSplitPreview` Studio (`lib/widgets/lut_split_preview.dart`):** Added 6 sample phone photos, 6 `ColorFiltered` presets, live **LUT Strength (`20%–100%`)** & **Exposure EV (`-25..+25`)** sliders, and an **`Auto Sweep`** presentation play button.
   - **Upgraded `ThreeSixtyViewer` (`lib/widgets/three_sixty_viewer.dart`):** Added **3x Magnifying Loupe Pinch-to-Zoom Mode**, angle-by-angle miniature paint layer notes (`0°` to `315°`), and an interactive 8-angle scrubber slider.
   - **Persistent Unlocked Downloads Vault & Official Receipts (`lib/screens/vault_screen.dart`, `lib/controllers/vault_controller.dart`):** Stores all unlocked `.DNG`, `.PDF`, `.STL`, and `.ZIP` files after Simple Checkout with unique License Keys and printable Peso (`₱`) receipts.
-  - **Compiled Final `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (52.6MB, 55,143,591 bytes) with 0 analyzer errors and 100% widget test pass rate.
+  - **Account Profile Head in AppBar & Body Cleanup (`lib/screens/home_screen.dart`):** Moved the user avatar/profile button into `AppBar.actions` right after the Cart icon (`🛒`). Removed the cramped `_AccountSecurityBar` from the top of the body, giving the search bar and product listings an uncluttered floating layout.
+  - **Zero-Overflow Responsive Badges (`lib/screens/home_screen.dart`):** Upgraded `_WelcomeBanner` badges with responsive `Wrap` and compact `DUAL E-COMMERCE` and `₱ Pesos • Instant` chips so text never cuts off on mobile phone viewports.
+  - **Cart Bug Fix on Sign Out (`lib/controllers/auth_controller.dart`):** Signing out (`signOut()`) now automatically invokes `CartController.instance.clear()`, resetting cart items and badge count to 0 so previous user carts do not linger.
+  - **Logged-In Dashboard Experience (`lib/screens/auth_screen.dart`):** When already logged in, the auth sheet displays a verified profile card (user ID, full name, email, role, and a prominent Log Out button) rather than displaying redundant login/signup forms.
+  - **Strict 15-Character Password Boundary (`lib/screens/auth_screen.dart`, `lib/controllers/auth_controller.dart`):** All password input fields enforce a strict 8–15 character length using `maxLength: 15` and `LengthLimitingTextInputFormatter(15)`.
+  - **Verified Email Notification Inbox & Order Receipts (`lib/controllers/auth_controller.dart`, `lib/screens/checkout_screen.dart`):** Real in-app email dispatcher records both 6-digit OTP verification codes and official purchase receipts containing item breakdown, license keys, and direct download links.
+  - **Realistic Checkout Payment Limits (`lib/screens/checkout_screen.dart`):**
+    - **E-Money (GCash & Maya):** Mobile number strictly enforced at **11 digits** starting with `09` via `LengthLimitingTextInputFormatter(11)` and `FilteringTextInputFormatter.digitsOnly`. MPIN strictly limited to **4 digits**.
+    - **Credit / Debit Card:** Formatted 16-digit card number, `MM/YY` expiry date, and 3-digit CVV code.
+  - **Authentic 360° Tabletop Miniature Inspection Scrubber (`lib/widgets/three_sixty_viewer.dart`):** Clarifies that the scrubber allows tabletop collectors to inspect paint glazes, edge highlights, and wash layers before purchase. Features a 3D turntable pedestal, 8 clickable degree chips (`0°` to `315°`), and auto-spin controls.
+  - **Interactive Tavern RPG Mini-Game (`lib/widgets/dice_roller_sheet.dart`):** Overhauled with 4 engaging game modes: **Monster Boss Raids** with live animated boss HP bars and Nat-20 critical strikes, **Barkeep Dice Duels**, **D100 Mystery Loot drops**, and an educational polyhedral dice tray.
+  - **Compiled Final Standalone `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (52.7 MB, 55,242,431 bytes) with 0 analyzer errors and 100% widget test pass rate.
 
 ---
 

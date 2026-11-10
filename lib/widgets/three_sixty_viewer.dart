@@ -140,12 +140,57 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Tabletop Collector Guidance Banner (Explains what the 360 scrubber does)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            color: AppColors.dungeon,
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, size: 14, color: AppColors.gold),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '360° Studio Turntable: Drag left/right to rotate this painted miniature across all 8 angles to inspect glaze & shading.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: AppColors.parchmentFaded,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           // Main 360° Interactive Canvas
           SizedBox(
             height: 310,
             child: Stack(
               alignment: Alignment.center,
               children: [
+                // Glowing Studio Turntable Pedestal
+                Positioned(
+                  bottom: 12,
+                  child: Container(
+                    width: 220,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(110),
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.gold.withValues(alpha: 0.35),
+                          AppColors.dragonRed.withValues(alpha: 0.15),
+                          Colors.transparent,
+                        ],
+                      ),
+                      border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.5),
+                        width: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Interactive Photo Scrubber or Pinch-to-Zoom Loupe Layer
                 if (_isLoupeZoomMode)
                   InteractiveViewer(
@@ -426,6 +471,42 @@ class _ThreeSixtyViewerState extends State<ThreeSixtyViewer>
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 6),
+
+                // 8 Quick Angle Preset Buttons
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(total, (i) {
+                      final isSelected = i == _currentIndex;
+                      final degrees = i * 45;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text('$degrees°'),
+                          selected: isSelected,
+                          selectedColor: AppColors.gold,
+                          backgroundColor: AppColors.stone,
+                          visualDensity: VisualDensity.compact,
+                          labelStyle: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected
+                                ? AppColors.dungeon
+                                : AppColors.parchment,
+                          ),
+                          onSelected: (_) {
+                            if (_isAutoRotating) {
+                              _autoRotateController.stop();
+                              _isAutoRotating = false;
+                            }
+                            setState(() => _currentIndex = i);
+                          },
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ],
             ),

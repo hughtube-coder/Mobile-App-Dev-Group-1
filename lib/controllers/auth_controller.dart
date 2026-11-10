@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'cart_controller.dart';
 
 class UserAccount {
   final String id;
@@ -74,11 +75,12 @@ class AuthController extends ChangeNotifier {
     return null;
   }
 
-  /// Strict 5-rule password policy validator
+  /// Strict 5-rule password policy validator (8 to 15 characters)
   static String? validateStrictPassword(String? value) {
     final v = value ?? '';
     if (v.isEmpty) return 'Password is required';
     if (v.length < 8) return 'Must be at least 8 characters long';
+    if (v.length > 15) return 'Cannot exceed 15 characters (max 15)';
     if (!RegExp(r'[A-Z]').hasMatch(v)) {
       return 'Must include at least 1 uppercase letter (A-Z)';
     }
@@ -98,7 +100,7 @@ class AuthController extends ChangeNotifier {
   static double calculatePasswordStrength(String password) {
     if (password.isEmpty) return 0.0;
     int score = 0;
-    if (password.length >= 8) score++;
+    if (password.length >= 8 && password.length <= 15) score++;
     if (RegExp(r'[A-Z]').hasMatch(password)) score++;
     if (RegExp(r'[a-z]').hasMatch(password)) score++;
     if (RegExp(r'[0-9]').hasMatch(password)) score++;
@@ -371,9 +373,33 @@ class AuthController extends ChangeNotifier {
     );
   }
 
-  /// Signs out (logs out) the current user session
+  /// Dispatches an official order confirmation & purchase receipt email to the buyer
+  DispatchedEmail sendOrderConfirmationEmail({
+    required String toEmail,
+    required String buyerName,
+    required String orderId,
+    required double totalAmount,
+    required String paymentChannel,
+    required List<String> itemSummaries,
+  }) {
+    final cleanEmail = toEmail.trim().toLowerCase();
+    final itemsList = itemSummaries.map((s) => '• $s').join('\n');
+    final email = DispatchedEmail(
+      toEmail: cleanEmail,
+      subject: '🧾 Order Confirmed #$orderId • Download Links Unlocked!',
+      body:
+          'Hail $buyerName!\n\nYour order #$orderId has been successfully confirmed and unlocked.\n\nPayment Method: ${paymentChannel.toUpperCase()}\nTotal Paid: ₱${totalAmount.toStringAsFixed(2)}\n\nPurchased Artifacts & Download Links:\n$itemsList\n\nAll digital download files (.CUBE, .DNG, .PDF, .STL) are now permanently stored in your Marketing Vikings Downloads Vault.\n\nThank you for supporting artisan creators and tabletop craft in Marketing Vikings!',
+      timestamp: DateTime.now(),
+    );
+    _emailLog.insert(0, email);
+    notifyListeners();
+    return email;
+  }
+
+  /// Signs out (logs out) the current user session and clears the active cart
   void signOut() {
     _currentUser = null;
+    CartController.instance.clear();
     notifyListeners();
   }
 }

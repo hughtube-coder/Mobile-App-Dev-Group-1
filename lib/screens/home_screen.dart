@@ -359,6 +359,51 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+
+          // Account / Profile Action Button (Head icon placed after Cart 🛒)
+          AnimatedBuilder(
+            animation: AuthController.instance,
+            builder: (context, _) {
+              final user = AuthController.instance.currentUser;
+              final isSignedIn = user != null;
+              return Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: IconButton(
+                  icon: isSignedIn
+                      ? Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.greenAccent, width: 1.5),
+                            color: AppColors.stone,
+                          ),
+                          child: Center(
+                            child: Text(
+                              user.fullName.isNotEmpty
+                                  ? user.fullName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.greenAccent,
+                              ),
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.account_circle_outlined,
+                          color: AppColors.gold,
+                          size: 26,
+                        ),
+                  tooltip: isSignedIn
+                      ? 'Account (${user.fullName}) • Tap to Manage'
+                      : 'Log In / Sign Up',
+                  onPressed: () => _openAuthScreen(initialTab: 0),
+                ),
+              );
+            },
+          ),
         ],
       ),
 
@@ -751,11 +796,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ACCOUNT & SECURITY STATUS BAR (Sign In / Sign Out / Create Account / Email Reset)
-                        _AccountSecurityBar(onOpenAuth: _openAuthScreen),
-                        const SizedBox(height: 12),
-
-                        // LIVE SEARCH & SORT BAR (Placed at the top so search results appear immediately below!)
+                        // LIVE SEARCH & SORT BAR (Placed directly at top with floating AppBar above)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
@@ -1152,182 +1193,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Account & Security Status Bar displayed at the top of HomeScreen
-class _AccountSecurityBar extends StatelessWidget {
-  final void Function({int initialTab}) onOpenAuth;
-
-  const _AccountSecurityBar({required this.onOpenAuth});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = AuthController.instance.currentUser;
-    if (user == null) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.stone.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.goldFaded),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.account_circle_outlined,
-              color: AppColors.gold,
-              size: 20,
-              semanticLabel: 'Account access icon',
-            ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Account Access • Log In or Create Account',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.parchment,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => onOpenAuth(initialTab: 0),
-              icon: const Icon(Icons.login, size: 14, color: AppColors.gold),
-              label: const Text(
-                'Log In',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gold,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => onOpenAuth(initialTab: 1),
-              icon: const Icon(
-                Icons.person_add_alt_1,
-                size: 14,
-                color: Colors.greenAccent,
-              ),
-              label: const Text(
-                'Sign Up',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.greenAccent,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => onOpenAuth(initialTab: 2),
-              icon: const Icon(
-                Icons.mark_email_read_outlined,
-                size: 13,
-                color: AppColors.parchmentFaded,
-              ),
-              label: const Text(
-                'Reset',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.parchmentFaded,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.stone.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.verified_user,
-            color: Colors.greenAccent,
-            size: 16,
-            semanticLabel: 'Verified signed in account',
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => onOpenAuth(initialTab: 0),
-              child: Text(
-                'Signed In: ${user.fullName} (${user.email})',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.parchment,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () => onOpenAuth(initialTab: 2),
-            icon: const Icon(
-              Icons.mark_email_read_outlined,
-              size: 13,
-              color: AppColors.gold,
-            ),
-            label: const Text(
-              'Email Reset',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: AppColors.gold,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              AuthController.instance.signOut();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged out! Tap Log In or Sign Up anytime.'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.logout, size: 13, color: Colors.redAccent),
-            label: const Text(
-              'Log Out',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Colors.redAccent,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Interactive Switcher Bar for the Dual E-Commerce Type architecture
 class _DualStoreSwitcher extends StatelessWidget {
@@ -1465,30 +1330,50 @@ class _WelcomeBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: const Text(
-                  'DUAL E-COMMERCE SYSTEM',
+                  'DUAL E-COMMERCE',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9.5,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.4,
+                    letterSpacing: 0.8,
                     color: AppColors.dungeon,
                   ),
                 ),
               ),
-              const Spacer(),
-              const Icon(Icons.verified, color: Colors.greenAccent, size: 16),
-              const SizedBox(width: 4),
-              const Text(
-                'Pesos (₱) • Instant Unlock',
-                style: TextStyle(color: Colors.greenAccent, fontSize: 11),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.4)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified, color: Colors.greenAccent, size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      '₱ Pesos • Instant',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

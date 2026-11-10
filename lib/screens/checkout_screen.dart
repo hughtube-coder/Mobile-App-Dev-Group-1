@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../controllers/auth_controller.dart';
 import '../controllers/cart_controller.dart';
@@ -10,7 +11,8 @@ import 'vault_screen.dart';
 
 /// Simple Checkout Screen demonstrating Form, FormField, TextFormField, and `GlobalKey<FormState>`.
 /// Implements Pure Digital Delivery (no shipping addresses, couriers, or physical inventory tracking).
-/// Once paid, the app immediately unlocks downloadable links for every purchased item and saves them to the Downloads Vault.
+/// Supports E-Money (GCash with strict 11-digit phone & 4-digit MPIN, Maya) and Credit / Debit Cards.
+/// Once paid, the app immediately unlocks downloadable links and dispatches an official receipt email.
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -25,11 +27,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passkeyController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
 
-  String _paymentChannel = 'gcash';
+  // Credit / Debit Card controllers
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _cardExpiryController = TextEditingController();
+  final TextEditingController _cardCvvController = TextEditingController();
+
+  String _paymentChannel = 'gcash'; // 'gcash', 'maya', 'card'
   bool _agreedToGuildTerms = true;
-  bool _obscurePasskey = true;
+  bool _obscurePin = true;
   bool _isProcessing = false;
 
   @override
@@ -47,7 +54,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _passkeyController.dispose();
+    _pinController.dispose();
+    _cardNumberController.dispose();
+    _cardExpiryController.dispose();
+    _cardCvvController.dispose();
     super.dispose();
   }
 
@@ -57,7 +67,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _nameController.text = user?.fullName ?? 'Alex Rivera';
       _emailController.text = user?.email ?? 'alex.creator@gmail.com';
       _phoneController.text = '09178842026';
-      _passkeyController.text = '2026';
+      _pinController.text = '2026';
+      _cardNumberController.text = '4532 8923 1120 2026';
+      _cardExpiryController.text = '12/28';
+      _cardCvvController.text = '888';
     });
   }
 
@@ -95,6 +108,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       buyerName: buyerName,
       buyerEmail: buyerEmail,
       paymentChannel: _paymentChannel,
+    );
+
+    // Send official confirmation email with download license links
+    final orderId = 'MV-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final summaries = purchasedItems
+        .map((it) =>
+            '${it.product.name} (${it.selectedSize}) • ₱${it.totalPrice.toStringAsFixed(0)} • Link: ${it.product.downloadFileName}')
+        .toList();
+
+    AuthController.instance.sendOrderConfirmationEmail(
+      toEmail: buyerEmail,
+      buyerName: buyerName,
+      orderId: orderId,
+      totalAmount: totalAmount,
+      paymentChannel: _paymentChannel == 'card'
+          ? 'Credit/Debit Card'
+          : _paymentChannel.toUpperCase(),
+      itemSummaries: summaries,
     );
 
     // Show Order Confirmation Dialog with Unlocked Download Links for every item!
@@ -500,94 +531,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Input widget: TextFormField with TextInputType.number (Slide 1)
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppColors.parchment),
-                decoration: InputDecoration(
-                  labelText: 'GCash / Maya Mobile Number (₱ Payment) *',
-                  hintText: 'e.g. 09171234567',
-                  prefixIcon: const Icon(
-                    Icons.phone_android,
-                    color: AppColors.gold,
-                    semanticLabel: 'Mobile phone numeric input',
-                  ),
-                  filled: true,
-                  fillColor: AppColors.stone.withValues(alpha: 0.6),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.goldFaded),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppColors.gold,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter some text'; // Exact slide 2 validator text
-                  }
-                  if (value.trim().length < 7) {
-                    return 'Enter a valid contact number (at least 7 digits)';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              // Input widget: TextFormField with TextInputType.visiblePassword & obscureText (Slide 4)
-              TextFormField(
-                controller: _passkeyController,
-                keyboardType: TextInputType.visiblePassword,
-                obscureText: _obscurePasskey,
-                style: const TextStyle(color: AppColors.parchment),
-                decoration: InputDecoration(
-                  labelText: 'Download Vault Passcode / PIN *',
-                  hintText: 'Enter secret PIN to authorize payment',
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                    color: AppColors.gold,
-                    semanticLabel: 'Vault secret security passcode',
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePasskey ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.gold,
-                      semanticLabel: 'Toggle secret passcode visibility',
-                    ),
-                    onPressed: () =>
-                        setState(() => _obscurePasskey = !_obscurePasskey),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.stone.withValues(alpha: 0.6),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.goldFaded),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppColors.gold,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter some text'; // Exact slide 2 validator text
-                  }
-                  if (value.trim().length < 4) {
-                    return 'Passcode must be at least 4 characters long';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
               // Input widget: FormField custom instant payment channel selector (Slide 3)
               FormField<String>(
                 initialValue: _paymentChannel,
@@ -603,7 +546,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'INSTANT PAYMENT & UNLOCK METHOD (₱)',
+                          'SELECT PAYMENT METHOD (E-MONEY OR CARD):',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -613,7 +556,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         const SizedBox(height: 10),
                         _buildPaymentOption(
-                          title: 'GCash Instant Unlock (₱0 Fee • Immediate Link)',
+                          title: 'GCash (E-Money • 11-digit mobile & 4-digit PIN)',
                           value: 'gcash',
                           selected: _paymentChannel == 'gcash',
                           onTap: () {
@@ -623,7 +566,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         const SizedBox(height: 8),
                         _buildPaymentOption(
-                          title: 'Maya Creator Wallet (₱0 Fee • Immediate Link)',
+                          title: 'Maya Wallet (E-Money • 11-digit mobile & 4-digit PIN)',
                           value: 'maya',
                           selected: _paymentChannel == 'maya',
                           onTap: () {
@@ -631,11 +574,274 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             field.didChange('maya');
                           },
                         ),
+                        const SizedBox(height: 8),
+                        _buildPaymentOption(
+                          title: 'Credit / Debit Card (Visa / Mastercard • 16-digit card)',
+                          value: 'card',
+                          selected: _paymentChannel == 'card',
+                          onTap: () {
+                            setState(() => _paymentChannel = 'card');
+                            field.didChange('card');
+                          },
+                        ),
                       ],
                     ),
                   );
                 },
               ),
+              const SizedBox(height: 16),
+
+              // DYNAMIC PAYMENT INPUT FIELDS (Accurate E-Money vs Card)
+              if (_paymentChannel == 'card') ...[
+                // Card Number (16 Digits)
+                TextFormField(
+                  controller: _cardNumberController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 19,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+                    LengthLimitingTextInputFormatter(19),
+                  ],
+                  style: const TextStyle(
+                    color: AppColors.parchment,
+                    letterSpacing: 2.0,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Card Number (16 Digits) *',
+                    hintText: '4532 8923 1120 2026',
+                    prefixIcon: const Icon(
+                      Icons.credit_card,
+                      color: AppColors.gold,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.stone.withValues(alpha: 0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldFaded),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.gold,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your card number';
+                    }
+                    final digits = value.replaceAll(' ', '');
+                    if (digits.length != 16) {
+                      return 'Card number must be 16 digits';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    // Expiry Date (MM/YY)
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cardExpiryController,
+                        keyboardType: TextInputType.datetime,
+                        maxLength: 5,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                          LengthLimitingTextInputFormatter(5),
+                        ],
+                        style: const TextStyle(color: AppColors.parchment),
+                        decoration: InputDecoration(
+                          labelText: 'Expiry (MM/YY) *',
+                          hintText: '12/28',
+                          prefixIcon: const Icon(
+                            Icons.calendar_today,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.stone.withValues(alpha: 0.6),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: AppColors.goldFaded),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.gold,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          if (!value.contains('/') || value.trim().length != 5) {
+                            return 'Format MM/YY';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // CVV (3 Digits)
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cardCvvController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 3,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(3),
+                        ],
+                        style: const TextStyle(color: AppColors.parchment),
+                        decoration: InputDecoration(
+                          labelText: 'CVV (3 Digits) *',
+                          hintText: '888',
+                          prefixIcon: const Icon(
+                            Icons.security,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.stone.withValues(alpha: 0.6),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: AppColors.goldFaded),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.gold,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          if (value.trim().length != 3) {
+                            return '3 digits';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                // E-Money: Strictly 11-digit mobile number
+                TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 11,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  style: const TextStyle(color: AppColors.parchment),
+                  decoration: InputDecoration(
+                    labelText:
+                        '${_paymentChannel == 'gcash' ? 'GCash' : 'Maya'} Mobile Number (Strictly 11 Digits) *',
+                    hintText: '09171234567',
+                    prefixIcon: const Icon(
+                      Icons.phone_android,
+                      color: AppColors.gold,
+                      semanticLabel: 'Mobile phone numeric input',
+                    ),
+                    filled: true,
+                    fillColor: AppColors.stone.withValues(alpha: 0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldFaded),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.gold,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your 11-digit mobile number';
+                    }
+                    final clean = value.trim();
+                    if (clean.length != 11) {
+                      return 'Number must be exactly 11 digits (e.g. 09171234567)';
+                    }
+                    if (!clean.startsWith('09')) {
+                      return 'Mobile number must start with 09';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // E-Money: Strictly 4-digit PIN
+                TextFormField(
+                  controller: _pinController,
+                  keyboardType: TextInputType.number,
+                  obscureText: _obscurePin,
+                  maxLength: 4,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(4),
+                  ],
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    letterSpacing: 4.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                    labelText:
+                        '${_paymentChannel == 'gcash' ? 'GCash' : 'Maya'} 4-Digit Security MPIN *',
+                    hintText: '4-digit PIN (e.g. 2026)',
+                    prefixIcon: const Icon(
+                      Icons.lock,
+                      color: AppColors.gold,
+                      semanticLabel: 'Vault secret security passcode',
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePin ? Icons.visibility_off : Icons.visibility,
+                        color: AppColors.gold,
+                        semanticLabel: 'Toggle secret passcode visibility',
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePin = !_obscurePin),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.stone.withValues(alpha: 0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldFaded),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.gold,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your 4-digit PIN';
+                    }
+                    if (value.trim().length != 4) {
+                      return 'PIN must be exactly 4 digits';
+                    }
+                    return null;
+                  },
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Input widget: FormField custom Terms & Conditions Checkbox
