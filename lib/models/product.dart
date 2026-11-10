@@ -194,15 +194,15 @@ class Product {
     ),
     Product(
       id: 'pattern-01',
-      name: 'Tailored Linen Jacket & Coat Sewing Pattern (.PDF)',
+      name: 'Tailored Linen Trousers & Tunic Pattern (.PDF)',
       category: ProductCategory.sewingPatterns,
       price: 480.0, // ₱480
       rating: 4.94,
       reviewCount: 64,
       shortDescription:
-          'Instant-download printable sewing pattern with seam allowances, notches & step-by-step illustrated guide.',
+          'Authentic tailored linen trousers and tunic sewing pattern with seam allowances, notches & illustrated guide.',
       fullDescription:
-          'Complete digital garment maker sewing pattern graded across sizes XS–3XL. Includes layered PDF files formatted for home printers (A4 / US Letter), copy-shop wide format (A0), and direct fabric projector calibration files. Instant digital download link unlocks right after checkout.',
+          'Complete digital garment maker sewing pattern for tailored linen trousers and tunic. Graded across sizes XS–3XL. Includes layered PDF files formatted for home printers (A4 / US Letter), copy-shop wide format (A0), and direct fabric projector calibration files. Instant digital download link unlocks right after checkout.',
       primaryImage: 'assets/images/pattern_01.jpg',
       galleryImages: [
         'assets/images/pattern_01.jpg',
@@ -218,53 +218,82 @@ class Product {
       ],
       isDigital: true,
       isFeatured: true,
-      downloadFileName: 'Tailored_Linen_Jacket_Sewing_Pattern_A4_A0.pdf',
-      photoCredit: 'Wikimedia Commons / Tracing Pattern Sewing Archive',
-      license: 'CC BY-SA 4.0',
+      downloadFileName: 'Tailored_Linen_Trousers_Tunic_Sewing_Pattern_A4_A0.pdf',
+      photoCredit: 'Unsplash / Authentic Linen Garment & Tailoring',
+      license: 'Unsplash License (Free Commercial Use)',
     ),
     Product(
       id: 'stl-01',
-      name: 'Articulated Guardian Statue 3D Print Mesh (.STL)',
+      name: 'Articulated Dragon 3D Print Model (.STL)',
       category: ProductCategory.stlFiles,
       price: 750.0, // ₱750
       rating: 4.97,
       reviewCount: 91,
       shortDescription:
-          'Pre-supported watertight 3D print .STL & .LYS files for resin (SLA/MSLA) and filament (FDM) printers.',
+          'High-resolution flexible print-in-place articulated dragon with pre-supported resin and filament files.',
       fullDescription:
-          'High-precision manifold 3D printable .STL mesh package. Includes both pre-supported chitubox/lychee scenes and unsupported raw .STL parts with keyed joints. Inspect all 8 angles using our built-in 360° scrubber before downloading!',
+          'Complete watertight articulated dragon 3D print model featuring flexible interlocking joints. Includes pre-supported Chitubox and Lychee scenes for resin printers and optimized support-free orientation for FDM filament printers.',
       primaryImage: 'assets/images/stl_01.jpg',
-      has360View: true,
+      has360View: false,
       galleryImages: [
         'assets/images/stl_01.jpg',
-        'assets/images/mini_angle_1.jpg',
-        'assets/images/mini_angle_2.jpg',
-        'assets/images/mini_angle_3.jpg',
-        'assets/images/mini_angle_4.jpg',
-        'assets/images/mini_angle_5.jpg',
-        'assets/images/mini_angle_6.jpg',
-        'assets/images/mini_01.jpg',
       ],
       colors: [
+        ProductColorOption(name: 'Emerald Dragon Silk PLA', color: Color(0xFF2E7D32)),
         ProductColorOption(name: 'Grey 8K Photopolymer Resin', color: Color(0xFF78909C)),
-        ProductColorOption(name: 'Matte Terracotta PLA', color: Color(0xFFD84315)),
         ProductColorOption(name: 'Silk Gold Filament', color: Color(0xFFD4A537)),
       ],
       sizes: [
-        '32mm & 75mm Pre-Supported (.STL + .LYS)',
-        'Merchant 3D Print License (Full .STL Pack)',
+        '100% Scale (30cm Flexible Dragon .STL)',
+        '150% Epic Display Scale (.STL + .LYS)',
+        'Merchant 3D Print Commercial License',
       ],
       isDigital: true,
       isFeatured: true,
-      downloadFileName: 'Articulated_Guardian_3DPrint_PreSupported_STL.zip',
-      photoCredit: 'Wikimedia Commons / 3D Print Craft Archive',
-      license: 'CC BY-SA 4.0',
+      downloadFileName: 'Articulated_Dragon_Flexible_PrintInPlace_STL.zip',
+      photoCredit: 'Unsplash / Authentic 3D Printed Articulated Dragon',
+      license: 'Unsplash License (Free Commercial Use)',
     ),
 
     // =========================================================================
     // STORE 2: TABLETOP RPG MINIATURES & DICE SWAP
     // (Focused on 3 Categories: Minis, Dice, and Digital Maps)
     // =========================================================================
+    Product(
+      id: 'mini-360',
+      name: 'Norse Dragon-Slayer Champion (360° Inspection)',
+      category: ProductCategory.minis,
+      price: 2850.0, // ₱2,850
+      rating: 5.0,
+      reviewCount: 52,
+      shortDescription:
+          'Hand-painted museum-grade 28mm Viking hero with genuine 8-angle 360° paint inspection scrubber.',
+      fullDescription:
+          'Exquisite hand-painted tabletop miniature of the Norse Dragon-Slayer champion wielding a runic axe and dragon-motif shield upon a circular wooden display pedestal. Painted with scale mail glazing, metallic edge highlights, and sealed with ultra-matte varnish. Swipe horizontally across all 8 sequential camera angles below to inspect the continuous 360° paint job!',
+      primaryImage: 'assets/images/mini_angle_1.jpg',
+      has360View: true,
+      galleryImages: [
+        'assets/images/mini_angle_1.jpg',
+        'assets/images/mini_angle_2.jpg',
+        'assets/images/mini_angle_3.jpg',
+        'assets/images/mini_angle_4.jpg',
+        'assets/images/mini_angle_5.jpg',
+        'assets/images/mini_angle_6.jpg',
+        'assets/images/mini_angle_7.jpg',
+        'assets/images/mini_angle_8.jpg',
+      ],
+      colors: [
+        ProductColorOption(name: 'Valhalla Bronze & Steel', color: Color(0xFF78909C)),
+        ProductColorOption(name: 'Dragon Fire Crimson', color: Color(0xFF8B1E1E)),
+        ProductColorOption(name: 'Runic Gold Trim', color: Color(0xFFD4A537)),
+      ],
+      sizes: ['28mm Heroic Tabletop', '32mm Display Scale', '75mm Collector Bust'],
+      isDigital: false,
+      isFeatured: true,
+      downloadFileName: 'Dragon_Slayer_Certificate_&_VTT_Token.zip',
+      photoCredit: '360° Miniature Studio Turntable Photography',
+      license: 'Marketing Vikings Exclusive Studio Asset',
+    ),
     Product(
       id: 'mini-01',
       name: 'Sun-Priest Feathered Headdress Hero',
@@ -273,20 +302,13 @@ class Product {
       rating: 4.95,
       reviewCount: 38,
       shortDescription:
-          'Hand-painted 28mm 3D-printed miniature with 8-photo 360° paint inspection scrubber.',
+          'Hand-painted 28mm tabletop miniature hero with 14 micro-glazes and ultra-matte protective varnish.',
       fullDescription:
-          'A museum-grade tabletop miniature depicting a Sun-Priest champion adorned with ceremonial feathered headdress and ancestral relic blade. Painted with 14 micro-glazes, non-metallic metal (NMM) techniques, and sealed with ultra-matte protective varnish. Swipe horizontally across all 8 camera angles above to inspect the paint job!',
+          'A museum-grade tabletop miniature depicting a Sun-Priest champion adorned with ceremonial feathered headdress and ancestral relic blade. Painted with 14 micro-glazes, non-metallic metal (NMM) techniques, and sealed with ultra-matte protective varnish.',
       primaryImage: 'assets/images/mini_01.jpg',
-      has360View: true,
+      has360View: false,
       galleryImages: [
         'assets/images/mini_01.jpg',
-        'assets/images/mini_angle_1.jpg',
-        'assets/images/mini_angle_2.jpg',
-        'assets/images/mini_angle_3.jpg',
-        'assets/images/mini_angle_4.jpg',
-        'assets/images/mini_angle_5.jpg',
-        'assets/images/mini_angle_6.jpg',
-        'assets/images/mini_02.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Solar Crimson', color: Color(0xFF8B1E1E)),
@@ -314,16 +336,9 @@ class Product {
       fullDescription:
           'Terrifying ophidian terror ready for jungle or dungeon boss encounters. Each scale has been individually highlighted with toxic chartreuse and venomous teal, topped with gloss varnish on the venom glands.',
       primaryImage: 'assets/images/mini_02.jpg',
-      has360View: true,
+      has360View: false,
       galleryImages: [
         'assets/images/mini_02.jpg',
-        'assets/images/mini_angle_2.jpg',
-        'assets/images/mini_angle_1.jpg',
-        'assets/images/mini_angle_3.jpg',
-        'assets/images/mini_angle_4.jpg',
-        'assets/images/mini_angle_5.jpg',
-        'assets/images/mini_angle_6.jpg',
-        'assets/images/mini_01.jpg',
       ],
       colors: [
         ProductColorOption(name: 'Viper Green', color: Color(0xFF2E7D32)),

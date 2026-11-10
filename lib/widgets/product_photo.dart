@@ -47,6 +47,15 @@ class ProductPhoto extends StatelessWidget {
     if (s.contains('lewischessmen') || s.contains('mini_angle_6')) {
       return 'assets/images/mini_angle_6.jpg';
     }
+    if (s.contains('mini_angle_7')) {
+      return 'assets/images/mini_angle_7.jpg';
+    }
+    if (s.contains('mini_angle_8')) {
+      return 'assets/images/mini_angle_8.jpg';
+    }
+    if (s.contains('articulated_dragon')) {
+      return 'assets/images/stl_01.jpg';
+    }
     if (s.contains('dados_4_a_20') ||
         s.contains('gaming_dice_multisided') ||
         s.contains('dice_02') ||

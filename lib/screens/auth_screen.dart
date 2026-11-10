@@ -76,73 +76,112 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _showEmailPopup(DispatchedEmail email) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.stone,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 5),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.gold, width: 1.5),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.mark_email_read, color: Colors.greenAccent, size: 24),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Security Email Dispatched!',
+                style: TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.mark_email_read,
-                  color: Colors.greenAccent,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'EMAIL SENT TO: ${email.toEmail}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.gold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
             Text(
-              email.subject,
+              'A verification email was dispatched to:\n${email.toEmail}',
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
                 color: AppColors.parchment,
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              email.body,
+              style: const TextStyle(color: AppColors.parchmentFaded, fontSize: 11),
+            ),
             if (email.otpCode != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Verification Code: ${email.otpCode} (Tap Autofill)',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.greenAccent,
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.dungeon,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.greenAccent),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      '6-DIGIT VERIFICATION CODE',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.greenAccent,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      email.otpCode!,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 6,
+                        color: AppColors.gold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
-        action: email.otpCode != null
-            ? SnackBarAction(
-                label: 'AUTOFILL',
-                textColor: AppColors.gold,
-                onPressed: () {
-                  setState(() {
-                    _resetOtpCtrl.text = email.otpCode!;
-                  });
-                },
-              )
-            : null,
+        actions: [
+          if (email.otpCode != null)
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: email.otpCode!));
+                setState(() {
+                  _resetOtpCtrl.text = email.otpCode!;
+                });
+                Navigator.of(ctx).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Auto-filled Code ${email.otpCode}! Ready to reset.'),
+                    backgroundColor: Colors.green.shade800,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.flash_on, color: AppColors.dungeon, size: 16),
+              label: const Text('AUTO-FILL CODE ⚡'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: AppColors.dungeon,
+              ),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('CLOSE', style: TextStyle(color: AppColors.parchmentFaded)),
+          ),
+        ],
       ),
     );
   }
@@ -365,11 +404,6 @@ class _AuthScreenState extends State<AuthScreen> {
                       _buildSignUpForm()
                     else
                       _buildEmailPasswordResetForm(),
-
-                    const SizedBox(height: 20),
-
-                    // Dispatched Security Emails Inbox Viewer
-                    _buildEmailOutboxSection(auth),
                   ],
                 ),
               ),
@@ -500,10 +534,6 @@ class _AuthScreenState extends State<AuthScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 20),
-
-        // Dispatched Security Emails Inbox Viewer
-        _buildEmailOutboxSection(auth),
       ],
     );
   }
@@ -1431,106 +1461,6 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _buildEmailOutboxSection(AuthController auth) {
-    final emails = auth.emailLog;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.stone.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.forward_to_inbox,
-                color: AppColors.gold,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'EMAIL NOTIFICATION INBOX (${emails.length})',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.1,
-                  color: AppColors.gold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          if (emails.isEmpty)
-            const Text(
-              'Emails sent for account verification, sign-in alerts, or 6-digit password reset codes will appear here.',
-              style: TextStyle(fontSize: 11, color: AppColors.mutedText),
-            )
-          else
-            ...emails.take(4).map((e) {
-              return Container(
-                margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.dungeon,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.goldFaded),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'To: ${e.toEmail}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.greenAccent,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (e.otpCode != null)
-                          Text(
-                            'Code: ${e.otpCode}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      e.subject,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.parchment,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      e.body,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.mutedText,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-        ],
-      ),
-    );
-  }
 
   InputDecoration _inputDecoration({
     required String label,
