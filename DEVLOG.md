@@ -215,7 +215,9 @@ Every core widget category presented in the Mobile Application Development lectu
       6. **Valhalla Champion:** Slay a Tavern Boss or win a Barkeep Duel -> **+3 Rolls** 🎲
       7. **Guild Member Loyalty:** Log in or create a verified account -> **+5 Rolls** 🎲
     - Real-time progress bars, live roll counters on the Floating Action Button (`Roll D20 (X)`) and AppBar dice badge, interactive glowing `CLAIM 🎁` buttons with haptic feedback, and a `Refresh Bounty Board 🔄` button for infinite repeat fun.
-  - **Compiled Final Standalone `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (52.8 MB, 55,324,891 bytes) with 0 analyzer errors and 100% test pass rate across 6 automated widget and controller tests.
+  - **Compiled Final Standalone `.APK`:** Built and exported **`C:\App\marketing_vikings\MarketingVikings.apk`** (59.0 MB, 61,839,739 bytes) with 0 analyzer errors and 100% test pass rate across 6 automated widget and controller tests.
+  - **100% Offline-Bundled High-Resolution Photos & Genuine 8-Angle 360° Hero:** Embedded all 18 authentic product photographs directly into `assets/images/` and copied to `collected_photos/` so broken image icons never appear. Single miniature items now display clean static photography, while the hero model (`mini-360`) features an authentic 8-angle 45-degree turntable inspection sequence.
+  - **Clean Auth UX:** Removed confusing in-app outbox container from the Account screen, providing a clean OTP dispatch dialog with an instant Auto-Fill code helper.
 
 ---
 
